@@ -45,14 +45,8 @@ const INITIAL_STATE: AppState = {
     showGrid: true,
 
     showLegend: true,
-
     showPeaks: true,
-
     showPhases: true,
-
-    /*
-     * Configurações adicionadas ao ConfigState.
-     */
     labelType: "name",
 
     articleMode: false,
@@ -74,28 +68,6 @@ const INITIAL_STATE: AppState = {
 export default function DRXAnalyzer() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
 
-  /*
-   * ============================================================
-   * CORRELAÇÃO DOS DADOS
-   * ============================================================
-   *
-   * O correlator atual trabalha com três argumentos:
-   *
-   * correlateData(
-   *   diffractogram,
-   *   peaks,
-   *   phases
-   * )
-   *
-   * A tolerância NÃO é passada aqui como quarto argumento.
-   *
-   * Também não usamos useEffect + setState para a correlação,
-   * evitando o erro:
-   *
-   * react-hooks/set-state-in-effect
-   *
-   * ============================================================
-   */
   const correlationResult = useMemo(() => {
     if (
       state.diffractogram.length === 0 ||

@@ -197,7 +197,6 @@ export default function DataTables({ state }: { state: AppState }) {
                     )}
                   </td>
 
-                  {/* Picos correlacionados */}
                   <td className="px-6 py-4 text-center">
                     <span
                       className="

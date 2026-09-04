@@ -6,7 +6,9 @@ export const metadata: Metadata = {
   description: "Análise avançada e acadêmica de difratogramas de raios X",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
       <body className="antialiased font-sans text-[#353638] bg-[#F8F7F4] min-h-screen selection:bg-[#C9C5BC] selection:text-[#353638]">
