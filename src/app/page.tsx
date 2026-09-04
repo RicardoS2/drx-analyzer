@@ -45,8 +45,11 @@ const INITIAL_STATE: AppState = {
     showGrid: true,
 
     showLegend: true,
+
     showPeaks: true,
+
     showPhases: true,
+
     labelType: "name",
 
     articleMode: false,
@@ -58,7 +61,9 @@ const INITIAL_STATE: AppState = {
 
   filesLoaded: {
     drx: false,
+
     peak: false,
+
     phase: false,
   },
 
@@ -76,6 +81,7 @@ export default function DRXAnalyzer() {
     ) {
       return {
         correlations: [],
+
         mainPhaseCode: null,
       };
     }
@@ -83,14 +89,15 @@ export default function DRXAnalyzer() {
     return correlateData(state.diffractogram, state.peaks, state.phases);
   }, [state.diffractogram, state.peaks, state.phases]);
 
-  /*
+  /**
    * ============================================================
    * CORRELAÇÕES
    * ============================================================
    */
+
   const correlations = correlationResult.correlations;
 
-  /*
+  /**
    * ============================================================
    * FASE PRINCIPAL
    * ============================================================
@@ -101,6 +108,7 @@ export default function DRXAnalyzer() {
    *
    * Nenhum pico é removido.
    */
+
   const mainPhaseCode = useMemo(() => {
     if (correlationResult.mainPhaseCode) {
       return correlationResult.mainPhaseCode;
@@ -135,7 +143,7 @@ export default function DRXAnalyzer() {
     return selectedCode;
   }, [correlationResult.mainPhaseCode, correlations]);
 
-  /*
+  /**
    * ============================================================
    * ESTADO DERIVADO
    * ============================================================
@@ -146,6 +154,7 @@ export default function DRXAnalyzer() {
    * As correlações são calculadas a partir deles e entregues
    * para Sidebar, gráfico e tabelas.
    */
+
   const derivedState = useMemo<AppState>(() => {
     return {
       ...state,
@@ -156,30 +165,34 @@ export default function DRXAnalyzer() {
     };
   }, [state, correlations, mainPhaseCode]);
 
-  /*
+  /**
    * ============================================================
    * IMPORTAÇÃO DOS ARQUIVOS
    * ============================================================
    */
+
   const handleFileUpload = async (
     type: "drx" | "peak" | "phase",
+
     file: File,
   ) => {
     try {
-      /*
+      /**
        * Limpa mensagem de erro anterior.
        */
+
       setState((prev) => ({
         ...prev,
 
         error: null,
       }));
 
-      /*
+      /**
        * --------------------------------------------------------
        * DIFRATOGRAMA
        * --------------------------------------------------------
        */
+
       if (type === "drx") {
         const data = await parseDiffractogram(file);
 
@@ -200,11 +213,12 @@ export default function DRXAnalyzer() {
         return;
       }
 
-      /*
+      /**
        * --------------------------------------------------------
        * PEAK LIST
        * --------------------------------------------------------
        */
+
       if (type === "peak") {
         const data = await parsePeakList(file);
 
@@ -225,11 +239,12 @@ export default function DRXAnalyzer() {
         return;
       }
 
-      /*
+      /**
        * --------------------------------------------------------
        * PHASE LIST
        * --------------------------------------------------------
        */
+
       if (type === "phase") {
         const data = await parsePhaseList(file);
 
@@ -250,11 +265,12 @@ export default function DRXAnalyzer() {
         return;
       }
     } catch (error: unknown) {
-      /*
+      /**
        * Tratamento tipado do erro.
        *
        * Não usamos any.
        */
+
       const message =
         error instanceof Error
           ? error.message
@@ -268,11 +284,12 @@ export default function DRXAnalyzer() {
     }
   };
 
-  /*
+  /**
    * ============================================================
    * CONFIGURAÇÕES DO GRÁFICO
    * ============================================================
    */
+
   const handleConfigChange = (newConfig: Partial<ConfigState>) => {
     setState((prev) => ({
       ...prev,
@@ -285,20 +302,22 @@ export default function DRXAnalyzer() {
     }));
   };
 
-  /*
+  /**
    * ============================================================
    * LIMPAR PROJETO
    * ============================================================
    */
+
   const resetProject = () => {
     setState(INITIAL_STATE);
   };
 
-  /*
+  /**
    * ============================================================
    * NOME DA FASE PRINCIPAL
    * ============================================================
    */
+
   const mainPhaseName = useMemo(() => {
     if (!mainPhaseCode) {
       return "-";
@@ -309,30 +328,33 @@ export default function DRXAnalyzer() {
     );
   }, [mainPhaseCode, state.phases]);
 
-  /*
+  /**
    * ============================================================
    * INTERFACE
-   * ============================================================
    *
    * O DESIGN ABAIXO FOI MANTIDO DO SEU PAGE.TSX ORIGINAL.
+   *
    * ============================================================
    */
+
   return (
     // Fundo geral #F8F7F4 (Off White)
-    <div className="flex flex-col h-screen bg-[#F8F7F4] overflow-hidden font-sans text-[#353638]">
+
+    <div className="flex h-screen min-h-screen w-full max-w-full  flex-col bg-[#F8F7F4] font-sans text-[#353638]">
       {/* Header com borda #C9C5BC (Stone) */}
-      <header className="bg-[#F8F7F4] border-b border-[#C9C5BC] px-6 py-4 flex items-center justify-between shrink-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="bg-[#E8E6E1] p-2.5 rounded-lg text-[#353638] border border-[#C9C5BC]">
-            <Activity className="w-5 h-5" />
+
+      <header className="z-10 flex shrink-0 flex-col gap-3 border-b border-[#C9C5BC] bg-[#F8F7F4] px-4 py-3 sm:px-5 sm:py-4 md:flex-row md:items-center md:justify-between md:px-6">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <div className="shrink-0 rounded-lg border border-[#C9C5BC] bg-[#E8E6E1] p-2 sm:p-2.5 text-[#353638]">
+            <Activity className="h-5 w-5" />
           </div>
 
-          <div>
-            <h1 className="font-bold text-xl text-[#353638] leading-tight">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold leading-tight text-[#353638] sm:text-lg md:text-xl">
               TESTE APP DE GRAFICO LAB_ECO
             </h1>
 
-            <p className="text-xs text-[#8C8478] font-medium">
+            <p className="truncate text-[10px] font-medium text-[#8C8478] sm:text-xs">
               Análise acadêmica de difratogramas de raios X
             </p>
           </div>
@@ -340,45 +362,45 @@ export default function DRXAnalyzer() {
 
         <button
           onClick={resetProject}
-          className="text-sm font-semibold text-[#353638] hover:text-[#353638] px-5 py-2.5 border border-[#C9C5BC] rounded-lg hover:bg-[#E8E6E1] transition-colors bg-[#F8F7F4]"
+          className="w-full rounded-lg border border-[#C9C5BC] bg-[#F8F7F4] px-4 py-2.5 text-sm font-semibold text-[#353638] transition-colors hover:bg-[#E8E6E1] hover:text-[#353638] sm:w-auto sm:px-5"
         >
           Limpar Projeto
         </button>
       </header>
 
-      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <Sidebar
           state={derivedState}
           onFileUpload={handleFileUpload}
           onConfigChange={handleConfigChange}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8">
           {state.error && (
-            <div className="mb-6 bg-[#E8E6E1] border-l-4 border-[#8C8478] text-[#353638] p-4 rounded-r-lg border border-r-[#C9C5BC] border-t-[#C9C5BC] border-b-[#C9C5BC] flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#8C8478]" />
+            <div className="mb-4 flex min-w-0 items-start gap-3 rounded-r-lg border border-r-[#C9C5BC] border-t-[#C9C5BC] border-b-[#C9C5BC] border-l-4 border-[#8C8478] bg-[#E8E6E1] p-3 text-[#353638] sm:mb-6 sm:p-4">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#8C8478]" />
 
-              <div>
-                <strong className="font-semibold block">
+              <div className="min-w-0">
+                <strong className="block font-semibold">
                   Erro na importação
                 </strong>
 
-                <span className="text-sm text-[#8C8478]">{state.error}</span>
+                <span className=" text-sm text-[#8C8478]">{state.error}</span>
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+          <div className="mb-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:mb-8 md:gap-5 lg:grid-cols-4">
             {/* ==================================================
                 CARD — PONTOS ANALISADOS
             ================================================== */}
 
-            <div className="bg-[#E8E6E1] p-5 rounded-xl border border-[#C9C5BC] hover:border-[#8C8478] transition-colors shadow-xs">
-              <div className="text-xs text-[#8C8478] font-semibold uppercase tracking-wider">
+            <div className="min-w-0 rounded-xl border border-[#C9C5BC] bg-[#E8E6E1] p-4 shadow-xs transition-colors hover:border-[#8C8478] sm:p-5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#8C8478]">
                 Pontos Analisados
               </div>
 
-              <div className="text-3xl font-bold text-[#353638] mt-2">
+              <div className="mt-2 text-2xl font-bold text-[#353638] sm:text-3xl">
                 {state.diffractogram.length.toLocaleString()}
               </div>
             </div>
@@ -387,12 +409,12 @@ export default function DRXAnalyzer() {
                 CARD — PICOS ENCONTRADOS
             ================================================== */}
 
-            <div className="bg-[#E8E6E1] p-5 rounded-xl border border-[#C9C5BC] hover:border-[#8C8478] transition-colors shadow-xs">
-              <div className="text-xs text-[#8C8478] font-semibold uppercase tracking-wider">
+            <div className="min-w-0 rounded-xl border border-[#C9C5BC] bg-[#E8E6E1] p-4 shadow-xs transition-colors hover:border-[#8C8478] sm:p-5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#8C8478]">
                 Picos Encontrados
               </div>
 
-              <div className="text-3xl font-bold text-[#353638] mt-2">
+              <div className="mt-2 text-2xl font-bold text-[#353638] sm:text-3xl">
                 {state.peaks.length}
               </div>
             </div>
@@ -401,12 +423,12 @@ export default function DRXAnalyzer() {
                 CARD — CORRELAÇÕES
             ================================================== */}
 
-            <div className="bg-[#E8E6E1] p-5 rounded-xl border border-[#C9C5BC] hover:border-[#8C8478] transition-colors shadow-xs">
-              <div className="text-xs text-[#8C8478] font-semibold uppercase tracking-wider">
+            <div className="min-w-0 rounded-xl border border-[#C9C5BC] bg-[#E8E6E1] p-4 shadow-xs transition-colors hover:border-[#8C8478] sm:p-5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#8C8478]">
                 Correlações Fixadas
               </div>
 
-              <div className="text-3xl font-bold text-[#353638] mt-2">
+              <div className="mt-2 text-2xl font-bold text-[#353638] sm:text-3xl">
                 {correlations.length}
               </div>
             </div>
@@ -415,17 +437,19 @@ export default function DRXAnalyzer() {
                 CARD — FASE PRINCIPAL
             ================================================== */}
 
-            <div className="bg-[#E8E6E1] p-5 rounded-xl border border-[#C9C5BC] hover:border-[#8C8478] transition-colors relative overflow-hidden group shadow-xs">
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8C8478]"></div>
+            <div className="relative min-w-0 overflow-hidden rounded-xl border border-[#C9C5BC] bg-[#E8E6E1] p-4 shadow-xs transition-colors hover:border-[#8C8478] sm:p-5">
+              <div className="absolute bottom-0 left-0 top-0 w-1.5 bg-[#8C8478]"></div>
 
-              <div className="text-xs text-[#8C8478] font-semibold uppercase tracking-wider pl-2">
+              <div className="truncate pl-2 text-xs font-semibold uppercase tracking-wider text-[#8C8478]">
                 Fase Principal
               </div>
 
-              <div className="text-xl font-bold text-[#353638] mt-2 pl-2 truncate flex items-center gap-2">
-                {mainPhaseCode && <span className="text-[#8C8478]">★</span>}
+              <div className="mt-2 flex min-w-0 items-center gap-2 truncate pl-2 text-lg font-bold text-[#353638] sm:text-xl">
+                {mainPhaseCode && (
+                  <span className="shrink-0 text-[#8C8478]">★</span>
+                )}
 
-                {mainPhaseName}
+                <span className="truncate">{mainPhaseName}</span>
               </div>
             </div>
           </div>
@@ -434,13 +458,17 @@ export default function DRXAnalyzer() {
               GRÁFICO
           ==================================================== */}
 
-          <DrxChart state={derivedState} />
+          <div className="min-w-0 max-w-full">
+            <DrxChart state={derivedState} />
+          </div>
 
           {/* ====================================================
               TABELAS
           ==================================================== */}
 
-          <DataTables state={derivedState} />
+          <div className="min-w-0 max-w-full">
+            <DataTables state={derivedState} />
+          </div>
         </main>
       </div>
     </div>
