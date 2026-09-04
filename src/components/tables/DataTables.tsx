@@ -1,7 +1,6 @@
-
-import React from 'react';
-import { AppState } from '@/types';
-import { Download } from 'lucide-react';
+import React from "react";
+import { AppState } from "@/types";
+import { Download } from "lucide-react";
 
 export default function DataTables({ state }: { state: AppState }) {
   if (state.correlations.length === 0 && state.phases.length === 0) {
@@ -16,21 +15,19 @@ export default function DataTables({ state }: { state: AppState }) {
         (c) =>
           `${c.twoThetaReal},${c.intensityReal},"${c.phases
             .map((p) => p.name)
-            .join('; ')}","${c.phases
-            .map((p) => p.formula)
-            .join('; ')}"`
+            .join("; ")}","${c.phases.map((p) => p.formula).join("; ")}"`,
       )
-      .join('\n');
+      .join("\n");
 
     const blob = new Blob([header + rows], {
-      type: 'text/csv',
+      type: "text/csv",
     });
 
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
 
     a.href = url;
-    a.download = 'drx_correlacoes.csv';
+    a.download = "drx_correlacoes.csv";
     a.click();
 
     window.URL.revokeObjectURL(url);
@@ -38,10 +35,8 @@ export default function DataTables({ state }: { state: AppState }) {
 
   return (
     <div className="mt-8 bg-[#F8F7F4] border border-[#C9C5BC] shadow-sm rounded-xl overflow-hidden">
-
       {/* Cabeçalho */}
       <div className="px-6 py-5 border-b border-[#C9C5BC] flex justify-between items-center bg-[#F8F7F4]">
-
         <h3 className="font-bold text-[#353638] text-lg">
           Fases Identificadas
         </h3>
@@ -65,14 +60,11 @@ export default function DataTables({ state }: { state: AppState }) {
           <Download className="w-4 h-4" />
           Exportar CSV
         </button>
-
       </div>
 
       {/* Tabela */}
       <div className="overflow-x-auto">
-
         <table className="w-full text-sm text-left">
-
           {/* Cabeçalho das colunas */}
           <thead
             className="
@@ -85,21 +77,13 @@ export default function DataTables({ state }: { state: AppState }) {
             "
           >
             <tr>
-              <th className="px-6 py-4 font-semibold">
-                Fase
-              </th>
+              <th className="px-6 py-4 font-semibold">Fase</th>
 
-              <th className="px-6 py-4 font-semibold">
-                Fórmula
-              </th>
+              <th className="px-6 py-4 font-semibold">Fórmula</th>
 
-              <th className="px-6 py-4 font-semibold">
-                Ref. Code
-              </th>
+              <th className="px-6 py-4 font-semibold">Ref. Code</th>
 
-              <th className="px-6 py-4 font-semibold">
-                Score
-              </th>
+              <th className="px-6 py-4 font-semibold">Score</th>
 
               <th className="px-6 py-4 font-semibold text-center">
                 Picos Correlacionados
@@ -108,16 +92,12 @@ export default function DataTables({ state }: { state: AppState }) {
           </thead>
 
           <tbody>
-
             {state.phases.map((phase, idx) => {
+              const isMain = phase.code === state.mainPhaseCode;
 
-              const isMain =
-                phase.code === state.mainPhaseCode;
-
-              const correlatedPeaksCount =
-                state.correlations.filter((c) =>
-                  c.phases.some((p) => p.code === phase.code)
-                ).length;
+              const correlatedPeaksCount = state.correlations.filter((c) =>
+                c.phases.some((p) => p.code === phase.code),
+              ).length;
 
               if (correlatedPeaksCount === 0) {
                 return null;
@@ -133,7 +113,6 @@ export default function DataTables({ state }: { state: AppState }) {
                     transition-colors
                   "
                 >
-
                   {/* Fase */}
                   <td
                     className="
@@ -156,7 +135,7 @@ export default function DataTables({ state }: { state: AppState }) {
                       </span>
                     )}
 
-                    <span className={isMain ? 'font-bold' : ''}>
+                    <span className={isMain ? "font-bold" : ""}>
                       {phase.name}
                     </span>
                   </td>
@@ -199,7 +178,6 @@ export default function DataTables({ state }: { state: AppState }) {
 
                   {/* Score */}
                   <td className="px-6 py-4 text-[#353638]">
-
                     {phase.score ? (
                       <span
                         className="
@@ -215,16 +193,12 @@ export default function DataTables({ state }: { state: AppState }) {
                         {phase.score}
                       </span>
                     ) : (
-                      <span className="text-[#8C8478]">
-                        -
-                      </span>
+                      <span className="text-[#8C8478]">-</span>
                     )}
-
                   </td>
 
                   {/* Picos correlacionados */}
                   <td className="px-6 py-4 text-center">
-
                     <span
                       className="
                         inline-flex
@@ -240,19 +214,13 @@ export default function DataTables({ state }: { state: AppState }) {
                     >
                       {correlatedPeaksCount}
                     </span>
-
                   </td>
-
                 </tr>
               );
             })}
-
           </tbody>
-
         </table>
-
       </div>
-
     </div>
   );
 }
