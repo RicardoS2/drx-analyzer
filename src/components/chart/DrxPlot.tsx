@@ -18,6 +18,7 @@ const Plot = dynamic(() => import("react-plotly.js"), {
           flex
           min-h-160
           w-full
+
           items-center
           justify-center
 
