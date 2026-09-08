@@ -1,8 +1,18 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ============================================================
+# DRX ANALYZER — GITIGNORE
+# ============================================================
 
-# dependencies
-/node_modules
-/.pnp
+# ============================================================
+# DEPENDÊNCIAS
+# ============================================================
+
+node_modules/
+**/node_modules/
+
+.npm/
+.pnpm-store/
+
+.pnp/
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,32 +20,241 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
 
-# next.js
-/.next/
-/out/
+# ============================================================
+# NEXT.JS
+# ============================================================
 
-# production
-/build
+.next/
+.next/**
+out/
+out/**
 
-# misc
-.DS_Store
-*.pem
+# ============================================================
+# BUILD / PRODUÇÃO
+# ============================================================
 
-# debug
+build/
+build/**
+dist/
+dist/**
+
+.tmp/
+tmp/
+temp/
+
+# ============================================================
+# TYPESCRIPT
+# ============================================================
+
+*.tsbuildinfo
+next-env.d.ts
+
+# ============================================================
+# TESTES / COBERTURA
+# ============================================================
+
+coverage/
+coverage/**
+.nyc_output/
+
+playwright-report/
+playwright-report/**
+
+test-results/
+test-results/**
+
+cypress/videos/
+cypress/screenshots/
+
+# ============================================================
+# CACHE DE FERRAMENTAS
+# ============================================================
+
+.cache/
+.parcel-cache/
+.turbo/
+.nx/
+.eslintcache
+.stylelintcache
+
+storybook-static/
+
+# ============================================================
+# VARIÁVEIS DE AMBIENTE
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.local.example
+
+# ============================================================
+# VERCEL
+# ============================================================
+
+.vercel/
+.vercel/**
+
+# ============================================================
+# LOGS
+# ============================================================
+
+*.log
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+lerna-debug.log*
 
-# vercel
-.vercel
+debug.log*
+error.log*
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ============================================================
+# SISTEMA OPERACIONAL — macOS
+# ============================================================
+
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+
+._*
+
+.Spotlight-V100
+.Trashes
+
+# ============================================================
+# SISTEMA OPERACIONAL — WINDOWS
+# ============================================================
+
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+Desktop.ini
+
+$RECYCLE.BIN/
+
+*.stackdump
+
+# ============================================================
+# SISTEMA OPERACIONAL — LINUX
+# ============================================================
+
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ============================================================
+# IDE — VISUAL STUDIO CODE
+# ============================================================
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# ============================================================
+# IDE — JETBRAINS
+# ============================================================
+
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ============================================================
+# OUTROS EDITORES
+# ============================================================
+
+.history/
+
+*.swp
+*.swo
+*.swn
+
+*.sublime-workspace
+*.sublime-project
+
+# ============================================================
+# CHAVES / CERTIFICADOS / CREDENCIAIS
+# ============================================================
+
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# ============================================================
+# BANCO DE DADOS LOCAL
+# ============================================================
+
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ============================================================
+# ARQUIVOS TEMPORÁRIOS / BACKUP
+# ============================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# ============================================================
+# PROCESSOS / LOCKS
+# ============================================================
+
+*.pid
+*.pid.lock
+*.seed
+
+# ============================================================
+# RELATÓRIOS / ARTEFATOS GERADOS
+# ============================================================
+
+reports/
+reports/**
+
+artifacts/
+artifacts/**
+
+# ============================================================
+# DOCUMENTAÇÃO GERADA
+# ============================================================
+
+docs/_build/
+
+# ============================================================
+# FERRAMENTAS ESPECÍFICAS
+# ============================================================
+
+.npmrc.local
+
+# ============================================================
+# ARQUIVOS DE SISTEMA / EDITORES
+# ============================================================
+
+*.swp
+*.swo
+*.swn
+*.bak
