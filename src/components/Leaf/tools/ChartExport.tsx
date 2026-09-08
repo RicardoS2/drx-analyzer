@@ -6,10 +6,6 @@ import { Download } from "@carbon/icons-react";
 
 import type { PlotlyHTMLElement } from "plotly.js";
 
-/* ============================================================
-   PRESETS DE TAMANHO
-   ============================================================ */
-
 interface ExportPreset {
   label: string;
   width: number;
@@ -37,52 +33,34 @@ const EXPORT_PRESETS: ExportPreset[] = [
     width: 2000,
     height: 1200,
   },
-  {
-    label: "2400 × 1350",
-    width: 2400,
-    height: 1350,
-  },
 ];
-
-/* ============================================================
-   ESCALAS DE EXPORTAÇÃO
-   ============================================================ */
 
 const SCALE_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16] as const;
 
-/* ============================================================
-   PROPS
-   ============================================================ */
+const SCALE_LABELS: Record<number, string> = {
+  1: "Resolução padrão",
+  2: "Resolução boa",
+  3: "Resolução alta",
+  4: "Resolução muito alta",
+  5: "Resolução muito alta",
+  6: "Resolução muito alta",
+  8: "Resolução superior",
+  10: "Resolução extrema",
+  12: "Resolução extrema",
+  14: "Resolução extrema",
+  16: "Resolução máxima",
+};
 
 interface ChartExportProps {
   plotElement: PlotlyHTMLElement | null;
   onClose: () => void;
 }
 
-/* ============================================================
-   COMPONENTE
-   ============================================================ */
-
 export default function ChartExport({ plotElement, onClose }: ChartExportProps) {
-  /* ==========================================================
-     ESTADO
-     ========================================================== */
-
   const [width, setWidth] = useState(2000);
-
   const [height, setHeight] = useState(1200);
-
-  /*
-   * Escala inicial.
-   * O usuário pode escolher de 1x até 16x.
-   */
-  const [scale, setScale] = useState<number>(4);
-
+  const [scale, setScale] = useState<number>(2);
   const [exporting, setExporting] = useState(false);
-
-  /* ==========================================================
-     LARGURA
-     ========================================================== */
 
   const updateWidth = (value: string) => {
     const parsed = Number(value);
@@ -94,10 +72,6 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
     setWidth(Math.min(10000, Math.max(300, Math.round(parsed))));
   };
 
-  /* ==========================================================
-     ALTURA
-     ========================================================== */
-
   const updateHeight = (value: string) => {
     const parsed = Number(value);
 
@@ -107,10 +81,6 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
 
     setHeight(Math.min(10000, Math.max(200, Math.round(parsed))));
   };
-
-  /* ==========================================================
-     EXPORTAÇÃO
-     ========================================================== */
 
   const exportImage = async (format: "png" | "svg") => {
     if (!plotElement) {
@@ -127,22 +97,9 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
 
       await Plotly.downloadImage(plotElement, {
         format,
-
-        filename: `grafico_drx_${width}x${height}_${scale}x`,
-
+        filename: `grafico_${width}x${height}_${scale}x`,
         width,
-
         height,
-
-        /*
-         * Permite realmente usar 1x até 16x.
-         *
-         * 1x  = tamanho original
-         * 2x  = 2 vezes
-         * 3x  = 3 vezes
-         * ...
-         * 16x = 16 vezes
-         */
         scale: Math.max(1, Math.min(16, scale)),
       });
 
@@ -152,17 +109,9 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
     }
   };
 
-  /* ==========================================================
-     RENDER
-     ========================================================== */
-
   return (
     <div className="flex flex-col gap-6">
-      {/* ======================================================
-          TAMANHO
-          ====================================================== */}
-
-      <section>
+      <div>
         <span
           className="
             mb-3
@@ -182,7 +131,6 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
             grid
             grid-cols-2
             gap-3
-            sm:grid-cols-3
           "
         >
           {EXPORT_PRESETS.map((preset) => {
@@ -195,54 +143,51 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
                 disabled={exporting}
                 onClick={() => {
                   setWidth(preset.width);
+
                   setHeight(preset.height);
                 }}
                 className={`
-                  rounded-md
-                  border
-                  px-3
-                  py-2.5
-                  text-sm
-                  font-medium
-                  outline-none
-                  transition-all
+                    rounded-md
+                    border
+                    px-4
+                    py-2.5
+                    text-sm
+                    font-medium
+                    transition-all
+                    outline-none
 
-                  focus-visible:ring-2
-                  focus-visible:ring-primary
-                  focus-visible:ring-offset-1
+                    focus-visible:ring-2
+                    focus-visible:ring-primary
+                    focus-visible:ring-offset-1
 
-                  disabled:cursor-not-allowed
-                  disabled:opacity-60
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
 
-                  ${
-                    selected
-                      ? `
-                        border-primary
-                        bg-primary
-                        text-white
-                        shadow-md
-                      `
-                      : `
-                        border-border-subtle
-                        bg-surface
-                        text-text-primary
+                    ${
+                      selected
+                        ? `
+                          border-primary
+                          bg-primary
+                          text-white
+                          shadow-md
+                        `
+                        : `
+                          border-border-subtle
+                          bg-surface
+                          text-text-primary
 
-                        hover:border-border-strong
-                        hover:bg-surface-02
-                      `
-                  }
-                `}
+                          hover:border-border-strong
+                          hover:bg-surface-02
+                        `
+                    }
+                  `}
               >
                 {preset.label}
               </button>
             );
           })}
         </div>
-      </section>
-
-      {/* ======================================================
-          DIMENSÕES
-          ====================================================== */}
+      </div>
 
       <div
         className="
@@ -312,10 +257,6 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
         </label>
       </div>
 
-      {/* ======================================================
-          QUALIDADE
-          ====================================================== */}
-
       <section>
         <span
           className="
@@ -342,22 +283,7 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
         >
           {SCALE_OPTIONS.map((value) => (
             <option key={value} value={value}>
-              {value}x Resolução
-              {value === 1
-                ? " — Padrão"
-                : value === 2
-                  ? " — Boa"
-                  : value === 3
-                    ? " — Alta"
-                    : value === 4
-                      ? " — Muito alta"
-                      : value === 16
-                        ? " — Máxima"
-                        : value >= 10
-                          ? " — Extrema"
-                          : value >= 8
-                            ? " — Muito alta"
-                            : " — Alta"}
+              {value}× — {SCALE_LABELS[value]}
             </option>
           ))}
         </select>
@@ -370,13 +296,9 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
             text-text-secondary
           "
         >
-          A escala multiplica a resolução de saída do gráfico.
+          A escala define o multiplicador aplicado à resolução da imagem exportada.
         </p>
       </section>
-
-      {/* ======================================================
-          RESUMO
-          ====================================================== */}
 
       <div
         className="
@@ -405,7 +327,9 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
             text-text-primary
           "
         >
-          {width} × {height} px · {scale}x
+          {width} × {height} px
+          {" · "}
+          {scale}×
         </div>
 
         <div
@@ -415,7 +339,7 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
             text-text-secondary
           "
         >
-          PNG: resolução raster em {scale}x.
+          PNG: exportação raster na escala selecionada.
         </div>
 
         <div
@@ -424,13 +348,9 @@ export default function ChartExport({ plotElement, onClose }: ChartExportProps) 
             text-text-secondary
           "
         >
-          SVG: saída vetorial.
+          SVG: exportação vetorial.
         </div>
       </div>
-
-      {/* ======================================================
-          BOTÕES
-          ====================================================== */}
 
       <div
         className="
