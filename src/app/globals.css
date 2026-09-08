@@ -1,19 +1,1112 @@
 @import "tailwindcss";
 
+/* ============================================================
+   LEAF DESIGN SYSTEM
+   Base visual inspirada no IBM Carbon Design System.
+
+   Princípios:
+   - tokens semânticos em vez de hex espalhado
+   - layers neutras para criar hierarquia
+   - verde como cor principal da marca
+   - estados de interação explícitos
+   - acessibilidade/foco
+   - UI separada das cores científicas dos gráficos
+   ============================================================ */
+
 :root {
-  --background: #f8f7f4; /* Off White */
-  --foreground: #353638; /* Ink */
+  /* ==========================================================
+     COLOR SYSTEM
+     ========================================================== */
+
+  /* ----------------------------------------------------------
+     Background
+     ---------------------------------------------------------- */
+
+  --background: #f4f4f4;
+
+  --background-hover: rgba(0, 0, 0, 0.04);
+
+  --background-active: rgba(0, 0, 0, 0.08);
+
+  --background-selected: rgba(0, 0, 0, 0.06);
+
+  --background-selected-hover: rgba(0, 0, 0, 0.1);
+
+  --background-inverse: #262626;
+
+  /* ----------------------------------------------------------
+     Layer
+     ---------------------------------------------------------- */
+
+  --layer-01: #ffffff;
+
+  --layer-01-hover: #ededed;
+
+  --layer-01-active: #d1d1d1;
+
+  --layer-01-selected: #e8e8e8;
+
+  --layer-01-selected-hover: #e0e0e0;
+
+  --layer-02: #f4f4f4;
+
+  --layer-02-hover: #e8e8e8;
+
+  --layer-02-active: #c6c6c6;
+
+  --layer-02-selected: #e0e0e0;
+
+  --layer-03: #e0e0e0;
+
+  --layer-03-hover: #d1d1d1;
+
+  /* ----------------------------------------------------------
+     Field
+     ---------------------------------------------------------- */
+
+  --field-01: #ffffff;
+
+  --field-02: #f4f4f4;
+
+  --field-hover: #e8e8e8;
+
+  /* ----------------------------------------------------------
+     Brand / Primary
+
+     Verde Leaf.
+     ---------------------------------------------------------- */
+
+  --interactive: #198038;
+
+  --interactive-hover: #0e6027;
+
+  --interactive-active: #044317;
+
+  --interactive-selected: #0e6027;
+
+  --interactive-disabled: #8d8d8d;
+
+  --interactive-soft: #defbe6;
+
+  --interactive-soft-hover: #c6efcc;
+
+  --interactive-soft-active: #a7e3b0;
+
+  --interactive-border: #42be65;
+
+  /* ----------------------------------------------------------
+     Text
+     ---------------------------------------------------------- */
+
+  --text-primary: #161616;
+
+  --text-secondary: #525252;
+
+  --text-placeholder: #6f6f6f;
+
+  --text-helper: #6f6f6f;
+
+  --text-disabled: #a8a8a8;
+
+  --text-on-color: #ffffff;
+
+  --text-inverse: #ffffff;
+
+  --text-success: #044317;
+
+  --text-warning: #513500;
+
+  --text-error: #750e13;
+
+  --text-info: #002d9c;
+
+  /* ----------------------------------------------------------
+     Icon
+     ---------------------------------------------------------- */
+
+  --icon-primary: #161616;
+
+  --icon-secondary: #525252;
+
+  --icon-tertiary: #6f6f6f;
+
+  --icon-disabled: #a8a8a8;
+
+  --icon-on-color: #ffffff;
+
+  --icon-success: #198038;
+
+  --icon-warning: #b28600;
+
+  --icon-error: #da1e28;
+
+  /* ----------------------------------------------------------
+     Border
+     ---------------------------------------------------------- */
+
+  --border-subtle: #e0e0e0;
+
+  --border-default: #8d8d8d;
+
+  --border-strong: #525252;
+
+  --border-inverse: #ffffff;
+
+  --border-disabled: #c6c6c6;
+
+  /* ----------------------------------------------------------
+     Support
+     ---------------------------------------------------------- */
+
+  --support-success: #198038;
+
+  --support-success-inverse: #42be65;
+
+  --support-warning: #f1c21b;
+
+  --support-error: #da1e28;
+
+  --support-info: #4589ff;
+
+  /* ----------------------------------------------------------
+     Focus
+     ---------------------------------------------------------- */
+
+  --focus: #198038;
+
+  --focus-inset: #ffffff;
+
+  --focus-inverse: #ffffff;
+
+  /* ----------------------------------------------------------
+     Overlay
+     ---------------------------------------------------------- */
+
+  --overlay: rgba(22, 22, 22, 0.5);
+
+  /* ----------------------------------------------------------
+     Highlight
+     ---------------------------------------------------------- */
+
+  --highlight: #d0e2ff;
+
+  /* ==========================================================
+     TYPOGRAPHY
+     ========================================================== */
+
+  --font-family-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+
+  --font-family-mono: var(--font-geist-mono), "SFMono-Regular", Consolas, monospace;
+
+  --font-size-xs: 0.75rem;
+
+  --font-size-sm: 0.8125rem;
+
+  --font-size-md: 0.875rem;
+
+  --font-size-lg: 1rem;
+
+  --font-size-xl: 1.125rem;
+
+  --font-size-2xl: 1.25rem;
+
+  --font-size-3xl: 1.5rem;
+
+  /* ==========================================================
+     SPACING
+
+     Escala base de 4 px.
+     ========================================================== */
+
+  --spacing-01: 0.25rem;
+
+  --spacing-02: 0.5rem;
+
+  --spacing-03: 0.75rem;
+
+  --spacing-04: 1rem;
+
+  --spacing-05: 1.25rem;
+
+  --spacing-06: 1.5rem;
+
+  --spacing-07: 2rem;
+
+  --spacing-08: 2.5rem;
+
+  --spacing-09: 3rem;
+
+  --spacing-10: 4rem;
+
+  /* ==========================================================
+     RADIUS
+     ========================================================== */
+
+  --radius-sm: 0.25rem;
+
+  --radius-md: 0.5rem;
+
+  --radius-lg: 0.75rem;
+
+  --radius-xl: 1rem;
+
+  /* ==========================================================
+     SHADOW
+
+     O Carbon usa profundidade com camadas e sombras
+     discretas. Evitamos sombras excessivamente decorativas.
+     ========================================================== */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.14);
+
+  /* ==========================================================
+     Z-INDEX
+     ========================================================== */
+
+  --z-base: 0;
+
+  --z-content: 10;
+
+  --z-sticky: 100;
+
+  --z-leaf: 1000;
+
+  --z-leaf-menu: 1050;
+
+  --z-leaf-card: 1100;
+
+  --z-modal: 2000;
+
+  --z-toast: 3000;
 }
+
+/* ============================================================
+   TAILWIND THEME
+   ============================================================ */
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-foreground: var(--text-primary);
+
+  --color-primary: var(--interactive);
+
+  --color-primary-hover: var(--interactive-hover);
+
+  --color-primary-active: var(--interactive-active);
+
+  --color-primary-soft: var(--interactive-soft);
+
+  --color-primary-border: var(--interactive-border);
+
+  --color-surface: var(--layer-01);
+
+  --color-surface-01: var(--layer-01);
+
+  --color-surface-02: var(--layer-02);
+
+  --color-surface-03: var(--layer-03);
+
+  --color-field: var(--field-01);
+
+  --color-field-02: var(--field-02);
+
+  --color-text-primary: var(--text-primary);
+
+  --color-text-secondary: var(--text-secondary);
+
+  --color-text-placeholder: var(--text-placeholder);
+
+  --color-text-disabled: var(--text-disabled);
+
+  --color-border-subtle: var(--border-subtle);
+
+  --color-border: var(--border-default);
+
+  --color-border-strong: var(--border-strong);
+
+  --color-icon-primary: var(--icon-primary);
+
+  --color-icon-secondary: var(--icon-secondary);
+
+  --color-icon-disabled: var(--icon-disabled);
+
+  --color-success: var(--support-success);
+
+  --color-warning: var(--support-warning);
+
+  --color-error: var(--support-error);
+
+  --color-info: var(--support-info);
+
+  --font-sans: var(--font-family-sans);
+
+  --font-mono: var(--font-family-mono);
 }
 
-body {
+/* ============================================================
+   RESET GLOBAL
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   HTML
+   ============================================================ */
+
+html {
+  min-height: 100%;
+
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  color: var(--text-primary);
+
+  color-scheme: light;
+
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+body {
+  min-width: 320px;
+
+  min-height: 100vh;
+
+  margin: 0;
+
+  background: var(--background);
+
+  color: var(--text-primary);
+
+  font-family: var(--font-family-sans);
+
+  font-size: var(--font-size-md);
+
+  line-height: 1.5;
+
+  text-rendering: optimizeLegibility;
+
+  -webkit-font-smoothing: antialiased;
+
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   TEXTO SELECIONADO
+   ============================================================ */
+
+::selection {
+  background: var(--interactive-soft);
+
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+
+a {
+  color: var(--interactive);
+
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--interactive-hover);
+}
+
+/* ============================================================
+   CONTROLES NATIVOS
+   ============================================================ */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   FOCUS
+
+   O Carbon trata focus como estado obrigatório.
+   Mantemos verde porque a identidade da Leaf é verde.
+   ============================================================ */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+
+  outline-offset: 2px;
+
+  box-shadow: 0 0 0 1px var(--focus-inset);
+}
+
+/* ============================================================
+   DISABLED
+   ============================================================ */
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+
+  color: var(--text-disabled);
+
+  opacity: 0.65;
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-placeholder);
+
+  opacity: 1;
+}
+
+/* ============================================================
+   SELECT
+   ============================================================ */
+
+select {
+  color: var(--text-primary);
+
+  background: var(--field-01);
+}
+
+/* ============================================================
+   OPTION
+   ============================================================ */
+
+select option {
+  color: var(--text-primary);
+
+  background: var(--field-01);
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color: #8d8d8d transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8d8d8d;
+
+  border: 2px solid transparent;
+
+  border-radius: 999px;
+
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6f6f6f;
+
+  border: 2px solid transparent;
+
+  background-clip: padding-box;
+}
+
+/* ============================================================
+   HR
+   ============================================================ */
+
+hr {
+  height: 1px;
+
+  margin: 0;
+
+  border: 0;
+
+  background: var(--border-subtle);
+}
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  font-weight: 600;
+}
+
+/* ============================================================
+   LEAF - PRIMARY BUTTON
+   ============================================================ */
+
+.leaf-primary-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: var(--spacing-03);
+
+  min-height: 2.5rem;
+
+  padding: 0 var(--spacing-04);
+
+  border: 1px solid var(--interactive);
+
+  border-radius: var(--radius-sm);
+
+  background: var(--interactive);
+
+  color: var(--text-on-color);
+
+  font-size: var(--font-size-md);
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.leaf-primary-button:hover {
+  background: var(--interactive-hover);
+
+  border-color: var(--interactive-hover);
+}
+
+.leaf-primary-button:active {
+  background: var(--interactive-active);
+
+  border-color: var(--interactive-active);
+}
+
+/* ============================================================
+   LEAF - SECONDARY BUTTON
+   ============================================================ */
+
+.leaf-secondary-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: var(--spacing-03);
+
+  min-height: 2.5rem;
+
+  padding: 0 var(--spacing-04);
+
+  border: 1px solid var(--border-default);
+
+  border-radius: var(--radius-sm);
+
+  background: var(--layer-01);
+
+  color: var(--text-primary);
+
+  font-size: var(--font-size-md);
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.leaf-secondary-button:hover {
+  background: var(--layer-01-hover);
+
+  border-color: var(--border-strong);
+}
+
+.leaf-secondary-button:active {
+  background: var(--layer-01-active);
+}
+
+/* ============================================================
+   LEAF - GHOST BUTTON
+   ============================================================ */
+
+.leaf-ghost-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: var(--spacing-02);
+
+  min-height: 2rem;
+
+  padding: 0 var(--spacing-03);
+
+  border: 1px solid transparent;
+
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+
+  color: var(--text-secondary);
+
+  font-size: var(--font-size-md);
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.leaf-ghost-button:hover {
+  background: var(--background-hover);
+
+  color: var(--text-primary);
+}
+
+.leaf-ghost-button:active {
+  background: var(--background-active);
+
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LEAF - PRIMARY SOFT ACTION
+   ============================================================ */
+
+.leaf-soft-button {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: var(--spacing-02);
+
+  min-height: 2.25rem;
+
+  padding: 0 var(--spacing-03);
+
+  border: 1px solid var(--interactive-border);
+
+  border-radius: var(--radius-sm);
+
+  background: var(--interactive-soft);
+
+  color: var(--interactive-active);
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.leaf-soft-button:hover {
+  background: var(--interactive-soft-hover);
+}
+
+.leaf-soft-button:active {
+  background: var(--interactive-soft-active);
+}
+
+/* ============================================================
+   LEAF - INPUT
+   ============================================================ */
+
+.leaf-input {
+  width: 100%;
+
+  min-height: 2.5rem;
+
+  padding: 0 var(--spacing-03);
+
+  border: 0;
+
+  border-bottom: 1px solid var(--border-strong);
+
+  border-radius: 0;
+
+  background: var(--field-01);
+
+  color: var(--text-primary);
+
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.leaf-input:hover {
+  background: var(--field-hover);
+}
+
+.leaf-input:focus {
+  border-bottom-color: var(--interactive);
+
+  box-shadow: inset 0 -2px 0 var(--interactive);
+}
+
+/* ============================================================
+   LEAF - SELECT
+   ============================================================ */
+
+.leaf-select {
+  width: 100%;
+
+  min-height: 2.5rem;
+
+  padding: 0 var(--spacing-03);
+
+  border: 1px solid var(--border-default);
+
+  border-radius: var(--radius-sm);
+
+  background: var(--field-01);
+
+  color: var(--text-primary);
+
+  cursor: pointer;
+
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.leaf-select:hover {
+  background: var(--field-hover);
+
+  border-color: var(--border-strong);
+}
+
+.leaf-select:focus {
+  border-color: var(--interactive);
+}
+
+/* ============================================================
+   LEAF - LABEL
+   ============================================================ */
+
+.leaf-label {
+  display: block;
+
+  margin-bottom: var(--spacing-02);
+
+  color: var(--text-secondary);
+
+  font-size: var(--font-size-sm);
+
+  font-weight: 600;
+
+  line-height: 1.25;
+}
+
+/* ============================================================
+   LEAF - HELPER TEXT
+   ============================================================ */
+
+.leaf-helper {
+  display: block;
+
+  margin-top: var(--spacing-02);
+
+  color: var(--text-helper);
+
+  font-size: var(--font-size-xs);
+
+  line-height: 1.4;
+}
+
+/* ============================================================
+   LEAF - CARD
+
+   Seguindo o princípio de layer:
+   Layer 01 dentro de Layer 02 etc.
+   ============================================================ */
+
+.leaf-card {
+  background: var(--layer-01);
+
+  border: 1px solid var(--border-subtle);
+
+  border-radius: var(--radius-md);
+
+  box-shadow: var(--shadow-md);
+
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LEAF - CARD HEADER
+   ============================================================ */
+
+.leaf-card-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  min-height: 3rem;
+
+  padding: 0 var(--spacing-04);
+
+  border-bottom: 1px solid var(--border-subtle);
+
+  background: var(--layer-02);
+
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LEAF - CARD TITLE
+   ============================================================ */
+
+.leaf-card-title {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: var(--font-size-md);
+
+  font-weight: 600;
+
+  line-height: 1.25;
+}
+
+/* ============================================================
+   LEAF - DIVIDER
+   ============================================================ */
+
+.leaf-divider {
+  width: 100%;
+
+  height: 1px;
+
+  background: var(--border-subtle);
+}
+
+/* ============================================================
+   LEAF - SELECTED
+   ============================================================ */
+
+.leaf-selected {
+  background: var(--layer-01-selected);
+
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LEAF - SUCCESS
+   ============================================================ */
+
+.leaf-success {
+  background: var(--interactive-soft);
+
+  border: 1px solid var(--interactive-border);
+
+  color: var(--text-success);
+}
+
+/* ============================================================
+   LEAF - WARNING
+   ============================================================ */
+
+.leaf-warning {
+  background: #fff8e1;
+
+  border: 1px solid #f1c21b;
+
+  color: var(--text-warning);
+}
+
+/* ============================================================
+   LEAF - ERROR
+   ============================================================ */
+
+.leaf-error {
+  background: #fff1f1;
+
+  border: 1px solid #da1e28;
+
+  color: var(--text-error);
+}
+
+/* ============================================================
+   LEAF - INFO
+   ============================================================ */
+
+.leaf-info {
+  background: #edf5ff;
+
+  border: 1px solid #4589ff;
+
+  color: var(--text-info);
+}
+
+/* ============================================================
+   LEAF - BADGE
+   ============================================================ */
+
+.leaf-badge-primary {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 1.5rem;
+
+  padding: 0 var(--spacing-02);
+
+  border: 1px solid var(--interactive-border);
+
+  border-radius: 999px;
+
+  background: var(--interactive-soft);
+
+  color: var(--interactive-active);
+
+  font-size: var(--font-size-xs);
+
+  font-weight: 600;
+
+  line-height: 1;
+}
+
+/* ============================================================
+   LEAF - ROOT
+   ============================================================ */
+
+[data-leaf-root] {
+  isolation: isolate;
+}
+
+/* ============================================================
+   LEAF - CARD
+   ============================================================ */
+
+[data-leaf-card] {
+  color: var(--text-primary);
+
+  background: var(--layer-01);
+
+  border-color: var(--border-subtle);
+
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================================
+   LEAF - DRAG HANDLE
+   ============================================================ */
+
+[data-leaf-drag-handle] {
+  user-select: none;
+
+  -webkit-user-select: none;
+}
+
+/* ============================================================
+   LEAF - BUTTON RESET
+   ============================================================ */
+
+[data-leaf-root] button,
+[data-leaf-card] button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   MOTION
+   ============================================================ */
+
+.leaf-transition {
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 640px) {
+  body {
+    font-size: var(--font-size-md);
+  }
+
+  [data-leaf-card] {
+    max-width: calc(100vw - 24px);
+  }
 }

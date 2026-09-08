@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TESTE APP DE GRAFICO LAB_ECO",
-  description: "Análise avançada e acadêmica de difratogramas de raios X",
+  title: "Plot de gráficos DRX",
+  description: "Análise e correlação de difratogramas de raios X.",
 };
 
 export default function RootLayout({
@@ -23,14 +23,11 @@ export default function RootLayout({
 
           overflow-x-hidden
 
-          bg-[#F8F7F4]
-          text-[#353638]
+          bg-background
+          text-text-primary
 
           font-sans
           antialiased
-
-          selection:bg-[#C9C5BC]
-          selection:text-[#353638]
         "
       >
         <main
@@ -39,6 +36,7 @@ export default function RootLayout({
             w-full
             min-w-0
             max-w-full
+
             overflow-x-hidden
           "
         >

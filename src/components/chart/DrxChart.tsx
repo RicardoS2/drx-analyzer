@@ -1,117 +1,54 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-
-import { AppState, CorrelatedPhase } from "@/types";
+import { useMemo } from "react";
 
 import type { Config, Data, Layout, PlotlyHTMLElement } from "plotly.js";
 
+import type { AppState, CorrelatedPhase, PhaseStyleConfig } from "@/types";
+
+import { DEFAULT_PHASE_MARKER_HEIGHT, DEFAULT_PHASE_MARKER_SIZE } from "@/types";
+
+import { chemicalFormulaLegend, chemicalFormulaText } from "@/lib/chemicalFormula";
+
+/* ============================================================
+   PLOTLY
+   ============================================================ */
+
 const Plot = dynamic(() => import("react-plotly.js"), {
   ssr: false,
+
   loading: () => (
-    <div className="min-h-100 w-full flex items-center justify-center bg-white border border-[#C9C5BC] rounded-xl text-[#8C8478]">
+    <div
+      className="
+          flex
+          min-h-160
+          w-full
+          items-center
+          justify-center
+
+          rounded-md
+          border
+          border-dashed
+          border-border-default
+
+          bg-surface-02
+
+          text-sm
+          font-medium
+          text-text-secondary
+        "
+    >
       Carregando gráfico científico...
     </div>
   ),
 });
 
-/* =========================================================
-   SÍMBOLOS DISPONÍVEIS
-   ========================================================= */
+/* ============================================================
+   PALETA CIENTÍFICA
+   ============================================================ */
 
-const SYMBOLS: string[] = [
-  "circle",
-  "circle-open",
-
-  "square",
-  "square-open",
-
-  "diamond",
-  "diamond-open",
-
-  "triangle-up",
-  "triangle-up-open",
-
-  "triangle-down",
-  "triangle-down-open",
-
-  "triangle-left",
-  "triangle-left-open",
-
-  "triangle-right",
-  "triangle-right-open",
-
-  "pentagon",
-  "pentagon-open",
-
-  "hexagon",
-  "hexagon-open",
-
-  "hexagram",
-  "hexagram-open",
-
-  "star",
-  "star-open",
-
-  "cross",
-  "x",
-
-  "hourglass",
-  "bowtie",
-];
-
-/* =========================================================
-   NOMES DOS SÍMBOLOS
-   ========================================================= */
-
-const SYMBOL_LABELS: Record<string, string> = {
-  circle: "Círculo",
-  "circle-open": "Círculo aberto",
-
-  square: "Quadrado",
-  "square-open": "Quadrado aberto",
-
-  diamond: "Losango",
-  "diamond-open": "Losango aberto",
-
-  "triangle-up": "Triângulo ↑",
-  "triangle-up-open": "Triângulo ↑ aberto",
-
-  "triangle-down": "Triângulo ↓",
-  "triangle-down-open": "Triângulo ↓ aberto",
-
-  "triangle-left": "Triângulo ←",
-  "triangle-left-open": "Triângulo ← aberto",
-
-  "triangle-right": "Triângulo →",
-  "triangle-right-open": "Triângulo → aberto",
-
-  pentagon: "Pentágono",
-  "pentagon-open": "Pentágono aberto",
-
-  hexagon: "Hexágono",
-  "hexagon-open": "Hexágono aberto",
-
-  hexagram: "Hexagrama",
-  "hexagram-open": "Hexagrama aberto",
-
-  star: "Estrela",
-  "star-open": "Estrela aberta",
-
-  cross: "Cruz",
-  x: "X",
-
-  hourglass: "Ampulheta",
-  bowtie: "Ampulheta dupla",
-};
-
-/* =========================================================
-   PALETA DAS FASES
-   NÃO CONTÉM AZUL
-   ========================================================= */
-
-const COLORS = [
+const CHART_PHASE_COLORS = [
   "#059669",
   "#D97706",
   "#7C3AED",
@@ -126,416 +63,688 @@ const COLORS = [
   "#15803D",
 ];
 
-/* =========================================================
-   CORES DO MODO ARTIGO
-   ========================================================= */
+/* ============================================================
+   FASE PRINCIPAL
+   ============================================================ */
 
-const ARTICLE_COLORS = [
-  "#222222",
-  "#444444",
-  "#666666",
-  "#888888",
-  "#555555",
-  "#777777",
-  "#999999",
-  "#333333",
-  "#111111",
-  "#707070",
+const MAIN_PHASE_COLOR = "#198038";
+
+/* ============================================================
+   SÍMBOLOS
+   ============================================================ */
+
+const SYMBOLS = [
+  "circle",
+  "circle-open",
+  "square",
+  "square-open",
+  "diamond",
+  "diamond-open",
+  "triangle-up",
+  "triangle-up-open",
+  "triangle-down",
+  "triangle-down-open",
+  "triangle-left",
+  "triangle-left-open",
+  "triangle-right",
+  "triangle-right-open",
+  "pentagon",
+  "pentagon-open",
+  "hexagon",
+  "hexagon-open",
+  "hexagram",
+  "hexagram-open",
+  "star",
+  "star-open",
+  "cross",
+  "x",
 ];
 
-/* =========================================================
-   TIPOS
-   ========================================================= */
+/* ============================================================
+   APARÊNCIA INTERNA DO GRÁFICO
+   ============================================================ */
+
+const CHART_TEXT = "#353638";
+
+const CHART_GRID = "#E2DED6";
+
+const CHART_AXIS = "#6F6A61";
+
+const CHART_BORDER = "#C9C5BC";
+
+const CHART_BACKGROUND = "#FFFFFF";
+
+const CHART_HOVER = "#FFFFFF";
+
+const DRX_TRACE_COLOR = "#2563EB";
+
+/* ============================================================
+   PROPS
+   ============================================================ */
 
 interface Props {
   state: AppState;
+
+  phaseVisibility?: Record<string, boolean>;
+
+  phaseStyles?: Record<string, PhaseStyleConfig>;
+
+  onPlotReady?: (plotElement: PlotlyHTMLElement) => void;
+}
+
+/* ============================================================
+   ESTRUTURAS
+   ============================================================ */
+
+interface PhaseMarker {
+  id: string;
+  code: string;
+  name: string;
+  formula: string;
+  x: number;
+  peakY: number;
+  size: number;
+  height: number;
+  order: number;
+  isMain: boolean;
+}
+
+interface PositionedMarker extends PhaseMarker {
+  lane: number;
+  collisionScale: number;
+  offset: number;
+  finalSize: number;
 }
 
 interface PhaseGroup {
-  x: number[];
-  y: number[];
-  drop: number[];
-  peakY: number[];
-  names: string[];
-  formulas: string[];
-  codes: string[];
+  markers: PositionedMarker[];
 }
 
-interface PhaseCustomData {
-  name: string;
-  formula: string;
-  code: string;
-  peakY: number;
-}
-
-interface ExportPreset {
-  label: string;
-  width: number;
-  height: number;
-}
-
-interface PhaseControl {
+interface MappedPhase {
   code: string;
   name: string;
   formula: string;
+  symbol: string;
+  color: string;
+  enabled: boolean;
+  symbolSize: number;
+  symbolHeight: number;
   isMain: boolean;
-  defaultSymbol: string;
-  defaultColor: string;
+  order: number;
 }
 
-/* =========================================================
-   EXPORTAÇÃO
-   ========================================================= */
+/* ============================================================
+   ORDEM DAS FASES
+   ============================================================ */
 
-const EXPORT_PRESETS: ExportPreset[] = [
-  {
-    label: "1200 × 800",
-    width: 1200,
-    height: 800,
-  },
-  {
-    label: "1600 × 1000",
-    width: 1600,
-    height: 1000,
-  },
-  {
-    label: "1800 × 1200",
-    width: 1800,
-    height: 1200,
-  },
-  {
-    label: "2000 × 1200",
-    width: 2000,
-    height: 1200,
-  },
-];
+function getPhaseOrder(
+  correlations: AppState["correlations"],
+  phases: AppState["phases"],
+): string[] {
+  const result: string[] = [];
 
-const SCALE_OPTIONS = [1, 2, 3, 4];
+  const seen = new Set<string>();
 
-/* =========================================================
-   COMPONENTE
-   ========================================================= */
-
-export default function DrxChart({ state }: Props) {
-  const { diffractogram, correlations, mainPhaseCode, config } = state;
-
-  const { articleMode, hideAxes, smoothLine, labelType } = config;
-
-  /* =======================================================
-     ESTADOS
-     ======================================================= */
-
-  const [exportWidth, setExportWidth] = useState<number>(2000);
-
-  const [exportHeight, setExportHeight] = useState<number>(1200);
-
-  const [exportScale, setExportScale] = useState<number>(2);
-
-  const [exporting, setExporting] = useState<boolean>(false);
-
-  const [plotElement, setPlotElement] = useState<PlotlyHTMLElement | null>(
-    null,
-  );
-
-  const [customSymbols, setCustomSymbols] = useState<Record<string, string>>(
-    {},
-  );
-
-  const [customColors, setCustomColors] = useState<Record<string, string>>({});
-
-  /* =======================================================
-     CORES DO GRÁFICO
-     ======================================================= */
-
-  const colors = {
-    text: articleMode ? "#000000" : "#353638",
-
-    grid: articleMode ? "#E5E5E5" : "#E8E6E1",
-
-    axis: articleMode ? "#000000" : "#8C8478",
-
-    bg: articleMode ? "#FFFFFF" : "#F8F7F4",
-
-    paperBg: articleMode ? "#FFFFFF" : "#F8F7F4",
-
-    legendBg: articleMode ? "rgba(255,255,255,0.97)" : "rgba(248,247,244,0.97)",
-
-    tooltipBg: articleMode ? "#FFFFFF" : "#F8F7F4",
-
-    tooltipBorder: articleMode ? "#000000" : "#C9C5BC",
-  };
-
-  /* =======================================================
-     FASES DISPONÍVEIS
-     ======================================================= */
-
-  const phaseControls = useMemo<PhaseControl[]>(() => {
-    if (!correlations || correlations.length === 0) {
-      return [];
-    }
-
-    const map = new Map<string, PhaseControl>();
-
-    let colorIdx = 0;
-    let symbolIdx = 0;
-
-    correlations.forEach((corr) => {
-      if (!corr || !corr.phases) {
-        return;
+  for (const correlation of correlations) {
+    for (const phase of correlation.phases) {
+      if (seen.has(phase.code)) {
+        continue;
       }
 
-      corr.phases.forEach((phase: CorrelatedPhase) => {
-        if (!phase || !phase.code || map.has(phase.code)) {
-          return;
+      seen.add(phase.code);
+
+      result.push(phase.code);
+    }
+  }
+
+  for (const phase of phases) {
+    if (seen.has(phase.code)) {
+      continue;
+    }
+
+    seen.add(phase.code);
+
+    result.push(phase.code);
+  }
+
+  return result;
+}
+
+/* ============================================================
+   SÍMBOLO PADRÃO
+   ============================================================ */
+
+function getDefaultSymbol(index: number, isMain: boolean): string {
+  if (isMain) {
+    return "star";
+  }
+
+  return SYMBOLS[index % SYMBOLS.length] ?? "circle";
+}
+
+/* ============================================================
+   COR PADRÃO
+   ============================================================ */
+
+function getDefaultColor(index: number, isMain: boolean): string {
+  if (isMain) {
+    return MAIN_PHASE_COLOR;
+  }
+
+  return CHART_PHASE_COLORS[index % CHART_PHASE_COLORS.length] ?? "#059669";
+}
+
+/* ============================================================
+   CLAMP
+   ============================================================ */
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/* ============================================================
+   ESCALA DE COLISÃO
+   ============================================================ */
+
+function getCollisionScale(rank: number): number {
+  const scales = [1.0, 0.88, 0.78, 0.7, 0.63, 0.57, 0.52, 0.48];
+
+  return scales[Math.min(rank, scales.length - 1)] ?? 0.45;
+}
+
+/* ============================================================
+   FATOR DE LANE
+   ============================================================ */
+
+function getLaneFactor(lane: number): number {
+  const factors = [1.0, 0.72, 1.28, 0.48, 1.55, 0.34, 1.78, 0.24];
+
+  return factors[Math.min(lane, factors.length - 1)] ?? 0.2;
+}
+
+/* ============================================================
+   CLUSTERS
+   ============================================================ */
+
+function buildClusters(markers: PhaseMarker[], distance: number): PhaseMarker[][] {
+  if (markers.length === 0) {
+    return [];
+  }
+
+  const sorted = [...markers].sort((a, b) => {
+    if (a.x !== b.x) {
+      return a.x - b.x;
+    }
+
+    if (a.isMain !== b.isMain) {
+      return a.isMain ? -1 : 1;
+    }
+
+    return a.order - b.order;
+  });
+
+  const clusters: PhaseMarker[][] = [];
+
+  let current: PhaseMarker[] = [];
+
+  let previousX = Number.NaN;
+
+  for (const marker of sorted) {
+    if (current.length === 0) {
+      current = [marker];
+
+      previousX = marker.x;
+
+      continue;
+    }
+
+    const close = Math.abs(marker.x - previousX) <= distance;
+
+    if (close) {
+      current.push(marker);
+    } else {
+      clusters.push(current);
+
+      current = [marker];
+    }
+
+    previousX = marker.x;
+  }
+
+  if (current.length > 0) {
+    clusters.push(current);
+  }
+
+  return clusters;
+}
+
+/* ============================================================
+   COMPONENTE
+   ============================================================ */
+
+export default function DrxChart({
+  state,
+  phaseVisibility = {},
+  phaseStyles = {},
+  onPlotReady,
+}: Props) {
+  const { diffractogram, correlations, mainPhaseCode, config } = state;
+
+  /* ==========================================================
+     CORES
+     ========================================================== */
+
+  const chartColors = useMemo(
+    () => ({
+      text: CHART_TEXT,
+
+      grid: CHART_GRID,
+
+      axis: CHART_AXIS,
+
+      background: config.background === "transparent" ? "rgba(0,0,0,0)" : CHART_BACKGROUND,
+
+      paper: config.background === "transparent" ? "rgba(0,0,0,0)" : CHART_BACKGROUND,
+
+      legend: config.background === "transparent" ? "rgba(255,255,255,0.97)" : CHART_BACKGROUND,
+
+      hover: CHART_HOVER,
+
+      border: CHART_BORDER,
+    }),
+    [config.background],
+  );
+
+  /* ==========================================================
+     ORDEM
+     ========================================================== */
+
+  const phaseOrder = useMemo(
+    () => getPhaseOrder(correlations, state.phases),
+    [correlations, state.phases],
+  );
+
+  /* ==========================================================
+     MAPA
+     ========================================================== */
+
+  const phaseMap = useMemo(() => {
+    const map = new Map<string, MappedPhase>();
+
+    for (const phase of state.phases) {
+      const isMain = phase.code === mainPhaseCode;
+
+      const phaseIndex = Math.max(0, phaseOrder.indexOf(phase.code));
+
+      let secondaryIndex = 0;
+
+      for (let index = 0; index < phaseIndex; index += 1) {
+        if (phaseOrder[index] !== mainPhaseCode) {
+          secondaryIndex += 1;
         }
+      }
 
-        const isMain = phase.code === mainPhaseCode;
+      const style = phaseStyles[phase.code] ?? {};
 
-        const defaultSymbol = isMain
-          ? "star"
-          : SYMBOLS[symbolIdx % SYMBOLS.length];
+      map.set(phase.code, {
+        code: phase.code,
 
-        const defaultColor = isMain
-          ? articleMode
-            ? "#000000"
-            : "#B91C1C"
-          : articleMode
-            ? ARTICLE_COLORS[colorIdx % ARTICLE_COLORS.length]
-            : COLORS[colorIdx % COLORS.length];
+        name: phase.name || phase.code,
 
-        map.set(phase.code, {
-          code: phase.code,
-          name: phase.name || phase.code,
-          formula: phase.formula || "",
-          isMain,
-          defaultSymbol,
-          defaultColor,
-        });
+        formula: chemicalFormulaText(phase.formula),
 
-        if (!isMain) {
-          colorIdx++;
-          symbolIdx++;
-        }
+        symbol: style.symbol ?? getDefaultSymbol(secondaryIndex, isMain),
+
+        color: style.color ?? getDefaultColor(secondaryIndex, isMain),
+
+        enabled: phaseVisibility[phase.code] !== false,
+
+        symbolSize: Math.max(2, style.symbolSize ?? DEFAULT_PHASE_MARKER_SIZE),
+
+        symbolHeight: clamp(
+          style.symbolHeight ?? config.lines.peakHeight ?? DEFAULT_PHASE_MARKER_HEIGHT,
+          10,
+          100,
+        ),
+
+        isMain,
+
+        order: phaseIndex,
       });
-    });
+    }
 
-    return Array.from(map.values());
-  }, [correlations, mainPhaseCode, articleMode]);
+    return map;
+  }, [
+    state.phases,
+    mainPhaseCode,
+    phaseOrder,
+    phaseStyles,
+    phaseVisibility,
+    config.lines.peakHeight,
+  ]);
 
-  /* =======================================================
-     DADOS DO GRÁFICO
+  /* ==========================================================
+     EIXO X
+     ========================================================== */
 
-     IMPORTANTE:
-     customSymbols e customColors são dependências
-     diretas do useMemo.
+  const xRange = useMemo<[number, number] | null>(() => {
+    const values = diffractogram.map((point) => Number(point.twoTheta)).filter(Number.isFinite);
 
-     Isso elimina o warning:
-     "missing dependencies getPhaseColor/getPhaseSymbol"
-     ======================================================= */
+    if (values.length === 0) {
+      return null;
+    }
+
+    const first = values[0]!;
+
+    const last = values[values.length - 1]!;
+
+    if (first === last) {
+      return [first - 0.1, last + 0.1];
+    }
+
+    return [first, last];
+  }, [diffractogram]);
+
+  /* ==========================================================
+     EIXO Y
+     ========================================================== */
+
+  const yRange = useMemo<[number, number] | null>(() => {
+    const values = diffractogram.map((point) => Number(point.intensity)).filter(Number.isFinite);
+
+    if (values.length === 0) {
+      return null;
+    }
+
+    const min = Math.min(...values);
+
+    const max = Math.max(...values);
+
+    const span = Math.max(max - min, Math.abs(max) * 0.1, 1);
+
+    return [min - span * 0.015, max + span * 0.52];
+  }, [diffractogram]);
+
+  /* ==========================================================
+     DATA
+     ========================================================== */
 
   const data = useMemo<Data[]>(() => {
     const traces: Data[] = [];
 
-    /* =====================================================
-       CURVA DRX
-       ===================================================== */
+    /* ====================================================
+           DRX
+           ==================================================== */
 
     if (diffractogram.length > 0) {
       traces.push({
-        x: diffractogram.map((point) => point.twoTheta),
+        x: diffractogram.map((point) => Number(point.twoTheta)),
 
-        y: diffractogram.map((point) => point.intensity),
+        y: diffractogram.map((point) => Number(point.intensity)),
 
-        type: "scattergl",
+        type: "scatter",
 
         mode: "lines",
 
         name: "DRX",
 
+        connectgaps: false,
+
         line: {
-          color: articleMode ? "#000000" : "#2563EB",
+          color: DRX_TRACE_COLOR,
 
-          width: config.curveThickness ?? 1.5,
+          width: config.lines.curveThickness,
 
-          shape: smoothLine ? "spline" : "linear",
+          shape: "linear",
+
+          simplify: false,
         },
 
         hovertemplate:
           "<b>Difratograma</b><br>" +
-          "2θ: %{x:.3f}°<br>" +
+          "2θ: %{x:.4f}°<br>" +
           "Intensidade: %{y:.2f}" +
           "<extra></extra>",
+
+        hoverinfo: "x+y",
+
+        hoverlabel: {
+          bgcolor: chartColors.hover,
+
+          bordercolor: chartColors.border,
+
+          font: {
+            family: config.typography.fontFamily,
+
+            size: 12,
+
+            color: chartColors.text,
+          },
+
+          namelength: -1,
+        },
 
         showlegend: config.showLegend,
       });
     }
 
-    /* =====================================================
-       VERIFICAÇÃO DAS FASES
-       ===================================================== */
+    /* ====================================================
+           FASES
+           ==================================================== */
 
-    if (!config.showPhases || !correlations || correlations.length === 0) {
+    if (!config.showPhases || correlations.length === 0) {
       return traces;
     }
 
-    /* =====================================================
-       AGRUPAMENTO
-       ===================================================== */
+    const intensityValues = diffractogram
+      .map((point) => Number(point.intensity))
+      .filter(Number.isFinite);
 
-    const phaseGroups = new Map<string, PhaseGroup>();
+    const maxIntensity = intensityValues.length > 0 ? Math.max(...intensityValues) : 1000;
 
-    const maxIntensity =
-      diffractogram.length > 0
-        ? Math.max(
-            ...diffractogram.map((point) =>
-              Number.isFinite(point.intensity) ? point.intensity : 0,
-            ),
-          )
-        : 1000;
+    const minIntensity = intensityValues.length > 0 ? Math.min(...intensityValues) : 0;
 
-    const safeMaxIntensity =
-      Number.isFinite(maxIntensity) && maxIntensity > 0 ? maxIntensity : 1000;
+    const usefulRange = Math.max(maxIntensity - minIntensity, Math.abs(maxIntensity) * 0.1, 1);
 
-    const yOffsetStep = safeMaxIntensity * 0.05;
+    const maxOffset = usefulRange * 0.3;
 
-    correlations.forEach((corr) => {
-      if (!corr || !corr.phases) {
+    const rawMarkers: PhaseMarker[] = [];
+
+    let sequence = 0;
+
+    correlations.forEach((correlation) => {
+      if (!correlation.phases || correlation.phases.length === 0) {
         return;
       }
 
-      corr.phases.forEach((phase: CorrelatedPhase, index: number) => {
-        if (!phase || !phase.code) {
+      correlation.phases.forEach((phase: CorrelatedPhase) => {
+        const phaseConfig = phaseMap.get(phase.code);
+
+        if (!phaseConfig || !phaseConfig.enabled) {
           return;
         }
 
-        if (!phaseGroups.has(phase.code)) {
-          phaseGroups.set(phase.code, {
-            x: [],
-            y: [],
-            drop: [],
-            peakY: [],
-            names: [],
-            formulas: [],
-            codes: [],
-          });
-        }
+        const x = Number(correlation.twoThetaReal);
 
-        const group = phaseGroups.get(phase.code);
+        const peakY = Number(correlation.intensityReal);
 
-        if (!group) {
+        if (!Number.isFinite(x) || !Number.isFinite(peakY)) {
           return;
         }
 
-        const intensityReal = Number(corr.intensityReal);
+        sequence += 1;
 
-        const twoThetaReal = Number(corr.twoThetaReal);
+        rawMarkers.push({
+          id: `${phase.code}-${sequence}`,
 
-        if (!Number.isFinite(twoThetaReal) || !Number.isFinite(intensityReal)) {
-          return;
-        }
+          code: phase.code,
 
-        const verticalDrop = yOffsetStep * (index + 1);
+          name: phaseConfig.name,
 
-        group.x.push(twoThetaReal);
+          formula: phaseConfig.formula,
 
-        group.y.push(intensityReal + verticalDrop);
+          x,
 
-        group.drop.push(verticalDrop);
+          peakY,
 
-        group.peakY.push(intensityReal);
+          size: phaseConfig.symbolSize,
 
-        group.names.push(phase.name || phase.code);
+          height: phaseConfig.symbolHeight,
 
-        group.formulas.push(phase.formula || "");
+          order: phaseConfig.order,
 
-        group.codes.push(phase.code);
+          isMain: phaseConfig.isMain,
+        });
       });
     });
 
-    /* =====================================================
-       TRACES DAS FASES
-       ===================================================== */
+    if (rawMarkers.length === 0) {
+      return traces;
+    }
+
+    /* ====================================================
+           POSICIONAMENTO
+           ==================================================== */
+
+    const xMin = xRange?.[0] ?? 0;
+
+    const xMax = xRange?.[1] ?? 1;
+
+    const xSpan = Math.max(Math.abs(xMax - xMin), 0.01);
+
+    const collisionDistance = Math.max(xSpan * 0.0035, 0.018);
+
+    const clusters = buildClusters(rawMarkers, collisionDistance);
+
+    const positionedMarkers: PositionedMarker[] = [];
+
+    clusters.forEach((cluster) => {
+      const ordered = [...cluster].sort((a, b) => {
+        if (a.isMain !== b.isMain) {
+          return a.isMain ? -1 : 1;
+        }
+
+        if (a.order !== b.order) {
+          return a.order - b.order;
+        }
+
+        return a.x - b.x;
+      });
+
+      ordered.forEach((marker, rank) => {
+        const collisionScale = getCollisionScale(rank);
+
+        const laneFactor = getLaneFactor(rank);
+
+        const heightFactor = marker.height / 100;
+
+        const offset = maxOffset * heightFactor * laneFactor;
+
+        const finalSize = clamp(
+          marker.size * collisionScale + (marker.isMain ? 4 : 0),
+
+          2,
+
+          42,
+        );
+
+        positionedMarkers.push({
+          ...marker,
+
+          lane: rank,
+
+          collisionScale,
+
+          offset,
+
+          finalSize,
+        });
+      });
+    });
+
+    /* ====================================================
+           AGRUPAMENTO
+           ==================================================== */
+
+    const phaseGroups = new Map<string, PhaseGroup>();
+
+    positionedMarkers.forEach((marker) => {
+      if (!phaseGroups.has(marker.code)) {
+        phaseGroups.set(marker.code, {
+          markers: [],
+        });
+      }
+
+      phaseGroups.get(marker.code)!.markers.push(marker);
+    });
+
+    /* ====================================================
+           TRACES
+           ==================================================== */
 
     phaseGroups.forEach((group, code) => {
-      if (group.x.length === 0) {
+      const phaseConfig = phaseMap.get(code);
+
+      if (!phaseConfig || group.markers.length === 0) {
         return;
       }
 
-      const phase = phaseControls.find((item) => item.code === code);
-
-      const isMain = code === mainPhaseCode;
+      const markers = [...group.markers].sort((a, b) => a.x - b.x);
 
       /*
-       * COR PERSONALIZADA
+       * customdata simples.
        *
-       * Sem função externa.
-       * Isso resolve o exhaustive-deps.
+       * Nada de objetos ou HTML.
        */
+      const customdata = markers.map((marker) => [
+        marker.name,
+        marker.formula,
+        marker.code,
+        marker.peakY,
+      ]);
 
-      const color =
-        customColors[code] ??
-        phase?.defaultColor ??
-        (isMain
-          ? articleMode
-            ? "#000000"
-            : "#B91C1C"
-          : articleMode
-            ? "#555555"
-            : "#059669");
+      const markerSizes = markers.map((marker) => marker.finalSize);
+
+      const markerOffsets = markers.map((marker) => marker.offset);
 
       /*
-       * SÍMBOLO PERSONALIZADO
+       * IMPORTANTE:
+       *
+       * O nome da trace NÃO recebe HTML.
+       *
+       * Isso elimina uma fonte de conflito
+       * entre legenda e hover.
        */
 
-      const symbol =
-        customSymbols[code] ??
-        phase?.defaultSymbol ??
-        (isMain ? "star" : "circle");
-
-      const markerSize = config.markerSize ?? 8;
-
-      const size = isMain ? markerSize + 4 : markerSize;
-
-      const markerBorder = articleMode
-        ? "#FFFFFF"
-        : isMain
-          ? "#353638"
-          : "#F8F7F4";
-
-      const traceName =
-        labelType === "formula" && group.formulas[0]
-          ? group.formulas[0]
-          : group.names[0];
-
-      const customdata: PhaseCustomData[] = group.names.map((name, index) => ({
-        name,
-        formula: group.formulas[index],
-        code: group.codes[index],
-        peakY: group.peakY[index],
-      }));
+      const plainLegendName =
+        config.labelType === "formula"
+          ? chemicalFormulaLegend(phaseConfig.formula) || phaseConfig.name
+          : phaseConfig.name;
 
       traces.push({
-        x: group.x,
+        x: markers.map((marker) => marker.x),
 
-        y: group.y,
+        y: markers.map((marker) => marker.peakY + marker.offset),
 
         mode: "markers",
 
         type: "scatter",
 
-        name: traceName,
+        name: plainLegendName,
 
         marker: {
-          symbol,
+          symbol: phaseConfig.symbol,
 
-          color,
+          color: phaseConfig.color,
 
-          size,
+          size: markerSizes,
+
+          opacity: 1,
 
           line: {
-            color: markerBorder,
+            color: phaseConfig.isMain ? CHART_TEXT : "#FFFFFF",
 
-            width: 1.5,
+            width: phaseConfig.isMain ? 1.5 : 1,
           },
         },
 
@@ -544,1053 +753,416 @@ export default function DrxChart({ state }: Props) {
 
           symmetric: false,
 
-          array: group.drop.map(() => 0),
+          array: markers.map(() => 0),
 
-          arrayminus: group.drop,
+          arrayminus: markerOffsets,
 
-          visible: true,
+          visible: config.showPeaks,
 
-          color,
+          color: phaseConfig.color,
 
-          thickness: isMain ? 1.5 : 1,
+          thickness: config.lines.peakConnectorThickness,
 
           width: 0,
         },
 
         customdata,
 
+        /*
+         * Tooltip totalmente independente
+         * da legenda.
+         */
         hovertemplate:
-          "<b>%{customdata.name}</b><br>" +
-          "Fórmula: %{customdata.formula}<br>" +
-          "Ref.: %{customdata.code}<br>" +
-          "2θ: %{x:.3f}°<br>" +
-          "Intensidade do pico: %{customdata.peakY:.2f}" +
+          "<b>%{customdata[0]}</b><br>" +
+          "Fórmula: %{customdata[1]}<br>" +
+          "Código: %{customdata[2]}<br>" +
+          "2θ: %{x:.4f}°<br>" +
+          "Intensidade: %{customdata[3]:.2f}" +
           "<extra></extra>",
+
+        /*
+         * Impede o Plotly de adicionar automaticamente
+         * informações de trace.
+         */
+        hoverinfo: "none",
+
+        hoverlabel: {
+          bgcolor: "#FFFFFF",
+
+          bordercolor: "#C9C5BC",
+
+          font: {
+            family: config.typography.fontFamily,
+
+            size: 12,
+
+            color: "#353638",
+          },
+
+          align: "left",
+
+          namelength: -1,
+        },
 
         showlegend: config.showLegend,
       });
     });
 
     return traces;
-  }, [
-    diffractogram,
-    correlations,
-    mainPhaseCode,
-    config,
-    articleMode,
-    smoothLine,
-    labelType,
-    phaseControls,
-    customSymbols,
-    customColors,
-  ]);
+  }, [diffractogram, correlations, config, phaseMap, xRange, chartColors]);
 
-  /* =======================================================
-     LAYOUT RESPONSIVO DO PLOTLY
-     ======================================================= */
+  /* ==========================================================
+     LAYOUT
+     ========================================================== */
 
-  const layout: Partial<Layout> = {
-    autosize: true,
+  const layout = useMemo<Partial<Layout>>(() => {
+    const fontFamily = config.typography.fontFamily;
 
-    /*
-     * Altura menor para telas pequenas.
-     * O CSS do container controla a largura.
-     */
+    return {
+      autosize: true,
 
-    height: 600,
+      height: 640,
 
-    margin: {
-      l: hideAxes ? 40 : 80,
+      margin: {
+        l: 92,
+        r: 36,
+        t: 72,
+        b: 92,
+      },
 
-      r: 30,
+      paper_bgcolor: chartColors.paper,
 
-      t: 40,
+      plot_bgcolor: chartColors.background,
 
-      b: hideAxes ? 40 : 70,
-    },
+      font: {
+        family: fontFamily,
 
-    paper_bgcolor: colors.paperBg,
+        color: chartColors.text,
 
-    plot_bgcolor: colors.bg,
+        size: 13,
+      },
 
-    font: {
-      family: "Arial, Helvetica, sans-serif",
-
-      size: 13,
-
-      color: colors.text,
-    },
-
-    xaxis: {
       title: {
-        text: hideAxes ? "" : "2θ (°)",
+        text: config.typography.titleText,
+
+        x: 0.5,
+
+        xanchor: "center",
+
+        y: 0.96,
+
+        yanchor: "top",
 
         font: {
-          family: "Arial, Helvetica, sans-serif",
+          family: fontFamily,
 
-          size: 15,
+          size: config.typography.titleFontSize,
+
+          color: chartColors.text,
         },
       },
 
-      showgrid: config.showGrid,
+      /* ====================================================
+           X
+           ==================================================== */
 
-      gridcolor: colors.grid,
+      xaxis: {
+        ...(xRange
+          ? {
+              range: [xRange[0], xRange[1]],
 
-      gridwidth: 1,
+              autorange: false,
 
-      zeroline: false,
+              rangemode: "normal",
+            }
+          : {
+              autorange: true,
+            }),
 
-      mirror: "ticks",
+        title: {
+          text: config.typography.xAxisTitle,
 
-      ticklen: 6,
+          standoff: 18,
 
-      ticks: "outside",
+          font: {
+            family: fontFamily,
 
-      showticklabels: !hideAxes,
+            size: config.typography.xAxisTitleFontSize,
 
-      linecolor: colors.axis,
+            color: chartColors.text,
+          },
+        },
 
-      tickcolor: colors.axis,
+        showgrid: config.showGrid,
 
-      linewidth: 1.5,
+        gridcolor: chartColors.grid,
 
-      tickfont: {
-        family: "Arial, Helvetica, sans-serif",
+        gridwidth: 1,
 
-        size: 12,
+        zeroline: false,
+
+        mirror: true,
+
+        ticks: "outside",
+
+        ticklen: 6,
+
+        tickwidth: 1,
+
+        linecolor: chartColors.axis,
+
+        tickcolor: chartColors.axis,
+
+        linewidth: 1.4,
+
+        tickfont: {
+          family: fontFamily,
+
+          size: 12,
+
+          color: chartColors.text,
+        },
+
+        automargin: true,
+
+        exponentformat: "none",
+
+        showexponent: "none",
+
+        separatethousands: false,
+
+        nticks: 12,
       },
 
-      automargin: true,
-    },
+      /* ====================================================
+           Y
+           ==================================================== */
 
-    yaxis: {
-      title: {
-        text: hideAxes ? "" : "Intensidade (counts)",
+      yaxis: {
+        ...(yRange
+          ? {
+              range: [yRange[0], yRange[1]],
+
+              autorange: false,
+            }
+          : {
+              autorange: true,
+            }),
+
+        title: {
+          text: config.typography.yAxisTitle,
+
+          standoff: 18,
+
+          font: {
+            family: fontFamily,
+
+            size: config.typography.yAxisTitleFontSize,
+
+            color: chartColors.text,
+          },
+        },
+
+        showgrid: config.showGrid,
+
+        gridcolor: chartColors.grid,
+
+        gridwidth: 1,
+
+        zeroline: false,
+
+        mirror: true,
+
+        ticks: "outside",
+
+        ticklen: 6,
+
+        tickwidth: 1,
+
+        linecolor: chartColors.axis,
+
+        tickcolor: chartColors.axis,
+
+        linewidth: 1.4,
+
+        tickfont: {
+          family: fontFamily,
+
+          size: 12,
+
+          color: chartColors.text,
+        },
+
+        automargin: true,
+
+        tickformat: ".0f",
+
+        exponentformat: "none",
+
+        showexponent: "none",
+
+        separatethousands: false,
+
+        nticks: 10,
+      },
+
+      /* ====================================================
+           LEGENDA
+           ==================================================== */
+
+      legend: {
+        x: 0.995,
+
+        y: 0.995,
+
+        xanchor: "right",
+
+        yanchor: "top",
+
+        bgcolor: chartColors.legend,
+
+        bordercolor: chartColors.border,
+
+        borderwidth: 1,
 
         font: {
-          family: "Arial, Helvetica, sans-serif",
+          family: fontFamily,
 
-          size: 15,
+          size: config.typography.legendFontSize,
+
+          color: chartColors.text,
         },
+
+        orientation: "v",
+
+        visible: config.showLegend,
+
+        itemclick: "toggle",
+
+        itemdoubleclick: "toggleothers",
       },
 
-      showgrid: config.showGrid,
+      /* ====================================================
+           HOVER
+           ==================================================== */
 
-      gridcolor: colors.grid,
+      hovermode: "closest",
 
-      gridwidth: 1,
+      hoverdistance: 20,
 
-      zeroline: false,
+      spikedistance: -1,
 
-      mirror: "ticks",
+      hoverlabel: {
+        bgcolor: CHART_HOVER,
 
-      ticklen: 6,
+        bordercolor: CHART_BORDER,
 
-      ticks: "outside",
+        font: {
+          family: fontFamily,
 
-      showticklabels: !hideAxes,
+          size: 12,
 
-      linecolor: colors.axis,
+          color: CHART_TEXT,
+        },
 
-      tickcolor: colors.axis,
+        align: "left",
 
-      linewidth: 1.5,
-
-      tickfont: {
-        family: "Arial, Helvetica, sans-serif",
-
-        size: 12,
+        namelength: -1,
       },
 
-      automargin: true,
-    },
+      /* ====================================================
+           ZOOM
+           ==================================================== */
 
-    legend: {
-      x: 0.99,
+      dragmode: "zoom",
+    };
+  }, [config, chartColors, xRange, yRange]);
 
-      y: 0.99,
+  /* ==========================================================
+     CONFIG
+     ========================================================== */
 
-      xanchor: "right",
+  const plotConfig = useMemo<Partial<Config>>(
+    () => ({
+      responsive: true,
 
-      yanchor: "top",
+      displaylogo: false,
 
-      bgcolor: colors.legendBg,
+      displayModeBar: false,
 
-      bordercolor: colors.axis,
+      scrollZoom: false,
 
-      borderwidth: 1,
+      doubleClick: "reset",
 
-      font: {
-        family: "Arial, Helvetica, sans-serif",
+      editable: false,
 
-        size: 12,
+      staticPlot: false,
 
-        color: colors.text,
-      },
+      modeBarButtonsToRemove: ["toImage", "lasso2d", "select2d", "autoScale2d"],
+    }),
+    [],
+  );
 
-      orientation: "v",
-    },
+  /* ==========================================================
+     READY
+     ========================================================== */
 
-    hovermode: "closest",
-
-    hoverlabel: {
-      bgcolor: colors.tooltipBg,
-
-      font: {
-        family: "Arial, Helvetica, sans-serif",
-
-        size: 12,
-
-        color: colors.text,
-      },
-
-      bordercolor: colors.tooltipBorder,
-    },
-
-    dragmode: "zoom",
+  const handlePlotReady = (graphDiv: HTMLElement) => {
+    onPlotReady?.(graphDiv as PlotlyHTMLElement);
   };
 
-  /* =======================================================
-     CONFIG DO PLOTLY
-     ======================================================= */
-
-  const plotConfig: Partial<Config> = {
-    responsive: true,
-
-    displaylogo: false,
-
-    displayModeBar: false,
-
-    modeBarButtonsToRemove: ["toImage", "lasso2d", "select2d"],
-  };
-
-  /* =======================================================
-     EXPORTAÇÃO
-     ======================================================= */
-
-  const applyPreset = (preset: ExportPreset) => {
-    setExportWidth(preset.width);
-
-    setExportHeight(preset.height);
-  };
-
-  const exportImage = async (format: "png" | "svg") => {
-    if (!plotElement) {
-      window.alert("O gráfico ainda não está pronto para exportação.");
-
-      return;
-    }
-
-    const width = Math.max(300, Number(exportWidth) || 2000);
-
-    const height = Math.max(200, Number(exportHeight) || 1200);
-
-    const scale = Math.max(1, Number(exportScale) || 1);
-
-    setExporting(true);
-
-    try {
-      const PlotlyModule = await import("plotly.js-dist-min");
-
-      const Plotly = PlotlyModule.default || PlotlyModule;
-
-      await Plotly.downloadImage(plotElement, {
-        format,
-
-        filename: `difratograma_DRX_${width}x${height}`,
-
-        width,
-
-        height,
-
-        scale,
-      });
-    } catch (error) {
-      console.error("Erro ao exportar gráfico:", error);
-
-      window.alert("Erro ao exportar o gráfico.");
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  /* =======================================================
+  /* ==========================================================
      RENDER
-     ======================================================= */
+     ========================================================== */
 
   return (
     <div
       className="
-        w-full
-        max-w-full
+        flex
         min-w-0
-        overflow-hidden
-        rounded-xl
+        w-full
+        flex-col
+
+        overflow-visible
+
+        rounded-md
+
         border
-        border-[#C9C5BC]
-        bg-[#F8F7F4]
-        mb-8
-        shadow-xs
+        border-border-subtle
+
+        bg-surface
+
+        shadow-sm
       "
     >
-      {/* =================================================
-          GRÁFICO
-          ================================================= */}
-
       <div
         className="
+          min-h-160
           w-full
           min-w-0
-          overflow-hidden
+          overflow-visible
+          bg-surface
         "
       >
         <Plot
           data={data}
           layout={layout}
-          useResizeHandler={true}
+          useResizeHandler
           style={{
             width: "100%",
+
             height: "100%",
+
             minWidth: 0,
           }}
           config={plotConfig}
           onInitialized={(_figure, graphDiv) => {
-            setPlotElement(graphDiv as PlotlyHTMLElement);
+            handlePlotReady(graphDiv);
           }}
           onUpdate={(_figure, graphDiv) => {
-            setPlotElement(graphDiv as PlotlyHTMLElement);
+            handlePlotReady(graphDiv);
           }}
         />
-      </div>
-
-      {/* =================================================
-          PERSONALIZAÇÃO DAS FASES
-          ================================================= */}
-
-      {config.showPhases && phaseControls.length > 0 && (
-        <div
-          className="
-              w-full
-              min-w-0
-              border-t
-              border-[#C9C5BC]
-              bg-[#F8F7F4]
-              px-3
-              py-4
-              sm:px-5
-              sm:py-5
-            "
-        >
-          {/* CABEÇALHO */}
-
-          <div
-            className="
-                flex
-                flex-col
-                gap-3
-                sm:flex-row
-                sm:items-center
-                sm:justify-between
-                mb-4
-              "
-          >
-            <div className="min-w-0">
-              <h3
-                className="
-                    text-sm
-                    sm:text-base
-                    font-bold
-                    text-[#353638]
-                  "
-              >
-                Personalização das fases
-              </h3>
-
-              <p
-                className="
-                    text-xs
-                    sm:text-sm
-                    text-[#8C8478]
-                    mt-1
-                    leading-relaxed
-                  "
-              >
-                Altere o símbolo e a cor de cada fase diretamente no gráfico.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setCustomSymbols({});
-                setCustomColors({});
-              }}
-              className="
-                  w-full
-                  sm:w-auto
-                  shrink-0
-                  px-3
-                  py-2
-                  rounded-lg
-                  border
-                  border-[#C9C5BC]
-                  bg-white
-                  text-[#353638]
-                  text-xs
-                  sm:text-sm
-                  font-semibold
-                  hover:bg-[#E8E6E1]
-                  transition-colors
-                "
-            >
-              Restaurar padrões
-            </button>
-          </div>
-
-          {/* FASES */}
-
-          <div
-            className="
-                grid
-                grid-cols-1
-                md:grid-cols-2
-                xl:grid-cols-3
-                gap-3
-                sm:gap-4
-              "
-          >
-            {phaseControls.map((phase) => {
-              const currentSymbol =
-                customSymbols[phase.code] ?? phase.defaultSymbol;
-
-              const currentColor =
-                customColors[phase.code] ?? phase.defaultColor;
-
-              return (
-                <div
-                  key={phase.code}
-                  className="
-                        min-w-0
-                        rounded-xl
-                        border
-                        border-[#C9C5BC]
-                        bg-white
-                        p-3
-                        sm:p-4
-                      "
-                >
-                  {/* ---------------------------------
-                          CABEÇALHO DA FASE
-                          --------------------------------- */}
-
-                  <div
-                    className="
-                          flex
-                          items-start
-                          gap-3
-                          mb-3
-                        "
-                  >
-                    <div
-                      className="
-                            flex-1
-                            min-w-0
-                          "
-                    >
-                      <div
-                        className="
-                              flex
-                              flex-wrap
-                              items-center
-                              gap-2
-                            "
-                      >
-                        <span
-                          className="
-                                text-sm
-                                font-bold
-                                text-[#353638]
-                              "
-                        >
-                          {phase.name}
-                        </span>
-
-                        {phase.isMain && (
-                          <span
-                            className="
-                                  shrink-0
-                                  px-2
-                                  py-0.5
-                                  rounded-full
-                                  bg-[#FEE2E2]
-                                  text-[#991B1B]
-                                  text-[9px]
-                                  sm:text-[10px]
-                                  font-bold
-                                  uppercase
-                                "
-                          >
-                            Principal
-                          </span>
-                        )}
-                      </div>
-
-                      <div
-                        className="
-                              text-[10px]
-                              sm:text-[11px]
-                              text-[#8C8478]
-                              mt-1
-                              break-all
-                            "
-                      >
-                        {phase.formula || "Sem fórmula"}
-                        {" · "}
-                        {phase.code}
-                      </div>
-                    </div>
-
-                    {/* PRÉVIA */}
-
-                    <div
-                      className="
-                            w-9
-                            h-9
-                            sm:w-10
-                            sm:h-10
-                            shrink-0
-                            rounded-lg
-                            border
-                            border-[#C9C5BC]
-                            bg-[#F8F7F4]
-                            flex
-                            items-center
-                            justify-center
-                          "
-                    >
-                      <span
-                        className="
-                              text-lg
-                              font-bold
-                            "
-                        style={{
-                          color: currentColor,
-                        }}
-                      >
-                        {currentSymbol === "circle"
-                          ? "●"
-                          : currentSymbol === "circle-open"
-                            ? "○"
-                            : currentSymbol === "square"
-                              ? "■"
-                              : currentSymbol === "square-open"
-                                ? "□"
-                                : currentSymbol === "diamond"
-                                  ? "◆"
-                                  : currentSymbol === "diamond-open"
-                                    ? "◇"
-                                    : currentSymbol === "triangle-up"
-                                      ? "▲"
-                                      : currentSymbol === "triangle-down"
-                                        ? "▼"
-                                        : currentSymbol === "triangle-left"
-                                          ? "◀"
-                                          : currentSymbol === "triangle-right"
-                                            ? "▶"
-                                            : currentSymbol === "star"
-                                              ? "★"
-                                              : currentSymbol === "star-open"
-                                                ? "☆"
-                                                : currentSymbol === "cross"
-                                                  ? "+"
-                                                  : currentSymbol === "x"
-                                                    ? "×"
-                                                    : "◆"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ---------------------------------
-                          CONTROLES
-                          --------------------------------- */}
-
-                  <div
-                    className="
-                          grid
-                          grid-cols-1
-                          sm:grid-cols-[minmax(0,1fr)_auto]
-                          gap-3
-                        "
-                  >
-                    {/* SÍMBOLO */}
-
-                    <div
-                      className="
-                            min-w-0
-                          "
-                    >
-                      <label
-                        htmlFor={`symbol-${phase.code}`}
-                        className="
-                              block
-                              text-[10px]
-                              font-bold
-                              uppercase
-                              tracking-wider
-                              text-[#8C8478]
-                              mb-1.5
-                            "
-                      >
-                        Símbolo
-                      </label>
-
-                      <select
-                        id={`symbol-${phase.code}`}
-                        value={currentSymbol}
-                        onChange={(event) => {
-                          setCustomSymbols((previous) => ({
-                            ...previous,
-                            [phase.code]: event.target.value,
-                          }));
-                        }}
-                        className="
-                              w-full
-                              min-w-0
-                              px-3
-                              py-2
-                              rounded-lg
-                              border
-                              border-[#C9C5BC]
-                              bg-[#F8F7F4]
-                              text-[#353638]
-                              text-xs
-                              sm:text-sm
-                              font-medium
-                              outline-none
-                              focus:border-[#8C8478]
-                            "
-                      >
-                        {SYMBOLS.map((symbol) => (
-                          <option key={symbol} value={symbol}>
-                            {SYMBOL_LABELS[symbol]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* COR */}
-
-                    <div
-                      className="
-                            sm:w-16
-                          "
-                    >
-                      <label
-                        htmlFor={`color-${phase.code}`}
-                        className="
-                              block
-                              text-[10px]
-                              font-bold
-                              uppercase
-                              tracking-wider
-                              text-[#8C8478]
-                              mb-1.5
-                            "
-                      >
-                        Cor
-                      </label>
-
-                      <input
-                        id={`color-${phase.code}`}
-                        type="color"
-                        value={currentColor}
-                        disabled={articleMode}
-                        onChange={(event) => {
-                          setCustomColors((previous) => ({
-                            ...previous,
-                            [phase.code]: event.target.value,
-                          }));
-                        }}
-                        className="
-                              h-9.5
-                              w-16
-                              max-w-full
-                              p-1
-                              rounded-lg
-                              border
-                              border-[#C9C5BC]
-                              bg-[#F8F7F4]
-                              cursor-pointer
-                              disabled:opacity-50
-                              disabled:cursor-not-allowed
-                            "
-                        title={
-                          articleMode
-                            ? "As cores das fases são controladas pelo modo artigo"
-                            : "Escolher cor"
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* MODO ARTIGO */}
-
-                  {articleMode && (
-                    <p
-                      className="
-                            mt-2
-                            text-[10px]
-                            leading-relaxed
-                            text-[#8C8478]
-                          "
-                    >
-                      No modo artigo, a escala de cinza é mantida para preservar
-                      o padrão visual científico.
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* =================================================
-          EXPORTAÇÃO
-          ================================================= */}
-
-      <div
-        className="
-          w-full
-          min-w-0
-          border-t
-          border-[#C9C5BC]
-          bg-[#E8E6E1]
-          px-3
-          py-4
-          sm:px-5
-          sm:py-5
-        "
-      >
-        <div
-          className="
-            grid
-            grid-cols-1
-            sm:grid-cols-2
-            xl:grid-cols-[minmax(0,1fr)_8rem_8rem_8rem_auto]
-            gap-4
-            items-end
-          "
-        >
-          {/* PRESETS */}
-
-          <div
-            className="
-              min-w-0
-              sm:col-span-2
-              xl:col-span-1
-            "
-          >
-            <label
-              className="
-                block
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wider
-                text-[#8C8478]
-                mb-2
-              "
-            >
-              Tamanho da figura
-            </label>
-
-            <div
-              className="
-                flex
-                flex-wrap
-                gap-2
-              "
-            >
-              {EXPORT_PRESETS.map((preset) => {
-                const selected =
-                  exportWidth === preset.width &&
-                  exportHeight === preset.height;
-
-                return (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => applyPreset(preset)}
-                    className={`
-                        px-3
-                        py-2
-                        rounded-lg
-                        border
-                        text-xs
-                        font-semibold
-                        whitespace-nowrap
-                        transition-colors
-                        ${
-                          selected
-                            ? "bg-[#353638] text-white border-[#353638]"
-                            : "bg-[#F8F7F4] text-[#353638] border-[#C9C5BC] hover:bg-white"
-                        }
-                      `}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* LARGURA */}
-
-          <div
-            className="
-              min-w-0
-            "
-          >
-            <label
-              htmlFor="export-width"
-              className="
-                block
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wider
-                text-[#8C8478]
-                mb-2
-              "
-            >
-              Largura (px)
-            </label>
-
-            <input
-              id="export-width"
-              type="number"
-              min={300}
-              max={10000}
-              step={100}
-              value={exportWidth}
-              onChange={(event) => setExportWidth(Number(event.target.value))}
-              className="
-                w-full
-                min-w-0
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-[#C9C5BC]
-                bg-[#F8F7F4]
-                text-[#353638]
-                text-sm
-                font-medium
-                outline-none
-                focus:border-[#8C8478]
-              "
-            />
-          </div>
-
-          {/* ALTURA */}
-
-          <div
-            className="
-              min-w-0
-            "
-          >
-            <label
-              htmlFor="export-height"
-              className="
-                block
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wider
-                text-[#8C8478]
-                mb-2
-              "
-            >
-              Altura (px)
-            </label>
-
-            <input
-              id="export-height"
-              type="number"
-              min={200}
-              max={10000}
-              step={100}
-              value={exportHeight}
-              onChange={(event) => setExportHeight(Number(event.target.value))}
-              className="
-                w-full
-                min-w-0
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-[#C9C5BC]
-                bg-[#F8F7F4]
-                text-[#353638]
-                text-sm
-                font-medium
-                outline-none
-                focus:border-[#8C8478]
-              "
-            />
-          </div>
-
-          {/* ESCALA */}
-
-          <div
-            className="
-              min-w-0
-            "
-          >
-            <label
-              htmlFor="export-scale"
-              className="
-                block
-                text-xs
-                font-semibold
-                uppercase
-                tracking-wider
-                text-[#8C8478]
-                mb-2
-              "
-            >
-              Escala
-            </label>
-
-            <select
-              id="export-scale"
-              value={exportScale}
-              onChange={(event) => setExportScale(Number(event.target.value))}
-              className="
-                w-full
-                min-w-0
-                px-3
-                py-2
-                rounded-lg
-                border
-                border-[#C9C5BC]
-                bg-[#F8F7F4]
-                text-[#353638]
-                text-sm
-                font-medium
-                outline-none
-                focus:border-[#8C8478]
-              "
-            >
-              {SCALE_OPTIONS.map((scale) => (
-                <option key={scale} value={scale}>
-                  {scale}×
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* BOTÕES */}
-
-          <div
-            className="
-              flex
-              flex-wrap
-              gap-2
-              sm:col-span-2
-              xl:col-span-1
-            "
-          >
-            <button
-              type="button"
-              disabled={exporting}
-              onClick={() => exportImage("png")}
-              className="
-                flex-1
-                sm:flex-none
-                px-4
-                py-2
-                rounded-lg
-                border
-                border-[#353638]
-                bg-[#353638]
-                text-white
-                text-sm
-                font-semibold
-                hover:bg-[#4A4B4D]
-                disabled:opacity-50
-                disabled:cursor-not-allowed
-                transition-colors
-              "
-            >
-              {exporting ? "Exportando..." : "PNG"}
-            </button>
-
-            <button
-              type="button"
-              disabled={exporting}
-              onClick={() => exportImage("svg")}
-              className="
-                flex-1
-                sm:flex-none
-                px-4
-                py-2
-                rounded-lg
-                border
-                border-[#C9C5BC]
-                bg-[#F8F7F4]
-                text-[#353638]
-                text-sm
-                font-semibold
-                hover:bg-white
-                disabled:opacity-50
-                disabled:cursor-not-allowed
-                transition-colors
-              "
-            >
-              {exporting ? "..." : "SVG"}
-            </button>
-          </div>
-        </div>
-
-        {/* =================================================
-            INFORMAÇÃO DA EXPORTAÇÃO
-            ================================================= */}
-
-        <div
-          className="
-            mt-4
-            pt-3
-            border-t
-            border-[#C9C5BC]
-            text-xs
-            leading-relaxed
-            text-[#8C8478]
-          "
-        >
-          Exportação atual:{" "}
-          <strong
-            className="
-              text-[#353638]
-            "
-          >
-            {exportWidth} × {exportHeight} px
-          </strong>
-          {" · "}escala{" "}
-          <strong
-            className="
-              text-[#353638]
-            "
-          >
-            {exportScale}×
-          </strong>
-          {exportWidth === 2000 && exportHeight === 1200 && (
-            <span className="block sm:inline sm:ml-2">
-              · recomendado para artigo científico
-            </span>
-          )}
-        </div>
       </div>
     </div>
   );

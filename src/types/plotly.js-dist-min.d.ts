@@ -1,6 +1,6 @@
-declare module "plotly.js-dist-min" {
-  import type { PlotlyHTMLElement } from "plotly.js";
+// src/types/plotly.d.ts
 
+declare module "plotly.js-dist-min" {
   interface DownloadImageOptions {
     format?: "png" | "jpeg" | "webp" | "svg";
     width?: number;
@@ -10,10 +10,7 @@ declare module "plotly.js-dist-min" {
   }
 
   interface PlotlyModule {
-    downloadImage(
-      gd: PlotlyHTMLElement,
-      options?: DownloadImageOptions,
-    ): Promise<string>;
+    downloadImage(gd: HTMLElement, options?: DownloadImageOptions): Promise<string>;
   }
 
   const Plotly: PlotlyModule;
